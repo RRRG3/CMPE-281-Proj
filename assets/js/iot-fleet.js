@@ -253,12 +253,20 @@
       dialogForm.addEventListener('submit', (event) => {
         event.preventDefault();
         const formData = new FormData(dialogForm);
+        const rawStatus = (formData.get('status') || '').toLowerCase();
+        const statusMapping = {
+          online: 'success',
+          offline: 'danger',
+          warning: 'warning'
+        };
+        const normalizedStatus = statusMapping[rawStatus] || 'warning';
+
         const newDevice = {
           deviceId: formData.get('deviceId'),
           tenant: formData.get('tenant'),
           location: formData.get('location'),
           type: formData.get('type'),
-          status: formData.get('status'),
+          status: normalizedStatus,
           heartbeat: 'Just registered',
           firmware: 'v2.4.1'
         };
