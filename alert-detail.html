@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert Detail - Smart Home Senior Care</title>
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/alert-detail.css">
+</head>
+<body class="alert-detail-body">
+    <header class="header">
+        <a class="back-btn" href="owner-dashboard.html" aria-label="Back to dashboard">←</a>
+        <div class="header-title">
+            <h1>Alert Detail - Emergency Event</h1>
+        </div>
+        <button class="btn btn-secondary" id="exportAlert">Export PDF</button>
+    </header>
+
+    <main class="content">
+        <section class="alert-banner">
+            <div class="alert-header">
+                <div class="alert-icon-large">⚠️</div>
+                <div class="alert-header-info">
+                    <h2>Fall Detected - Bedroom</h2>
+                    <div class="alert-meta">
+                        <strong>Location:</strong> Bedroom |
+                        <strong>Device:</strong> BED-CAM-01 |
+                        <strong>ML Confidence:</strong> 87%
+                    </div>
+                    <div class="alert-timestamp" id="alertTimestamp">
+                        📅 Friday, October 5, 2025 - 21:32:03 PDT
+                    </div>
+                </div>
+            </div>
+            <div class="alert-status" id="alertStatus" data-status="unacknowledged">
+                <span class="status-dot"></span>
+                <span class="status-text">Awaiting acknowledgement</span>
+            </div>
+        </section>
+
+        <div class="grid-2col">
+            <section>
+                <article class="panel">
+                    <h2 class="panel-title">📋 Alert Timeline &amp; Events</h2>
+                    <div class="timeline" id="timeline"></div>
+                </article>
+                <article class="panel">
+                    <h2 class="panel-title">🎵 Audio Waveform &amp; Recording</h2>
+                    <div class="waveform-container">
+                        <div class="waveform" id="waveform"></div>
+                        <button class="play-btn" id="playAudio">▶️ Play Audio Clip (3.2 seconds)</button>
+                        <p class="audio-location">Audio stored in S3: <code>s3://smart-home-media/audio/H123/2025-10-05/alert-789.wav</code></p>
+                    </div>
+                </article>
+            </section>
+            <section>
+                <article class="panel">
+                    <h2 class="panel-title">📊 Alert Information</h2>
+                    <dl class="info-grid" id="alertInfo"></dl>
+                </article>
+                <article class="panel">
+                    <h2 class="panel-title">📬 Notifications Delivered</h2>
+                    <div class="notification-list" id="notificationList"></div>
+                </article>
+                <article class="panel">
+                    <h2 class="panel-title">⚡ Actions</h2>
+                    <div class="action-grid">
+                        <button class="action-btn primary" data-action="acknowledge">✓ Acknowledge Alert</button>
+                        <button class="action-btn secondary" data-action="share">📤 Share with Family</button>
+                        <button class="action-btn secondary" data-action="download">💾 Download Audio</button>
+                        <button class="action-btn emergency" data-action="call">📞 Call Emergency Services</button>
+                    </div>
+                </article>
+            </section>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/alert-detail.js"></script>
+</body>
+</html>

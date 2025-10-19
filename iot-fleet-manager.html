@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Fleet Manager - Smart Home Senior Care</title>
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/iot-fleet.css">
+</head>
+<body class="iot-body">
+    <header class="header">
+        <div class="header-left">
+            <a class="logo" href="index.html">🔧</a>
+            <div class="header-title">
+                <h1>IoT Fleet Management Dashboard</h1>
+                <div class="header-subtitle">Device Registry &amp; Network Operations</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="avatar">IT</div>
+                <div>
+                    <div class="user-name">IoT Team</div>
+                    <div class="user-role">Technical Operations</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary" id="openCommandCenter">Command Center</button>
+        </div>
+    </header>
+
+    <nav class="nav-bar" role="tablist">
+        <button class="nav-item active" data-section="overview">Fleet Overview</button>
+        <button class="nav-item" data-section="registry">Device Registry</button>
+        <button class="nav-item" data-section="network">Network Health</button>
+        <button class="nav-item" data-section="firmware">Firmware &amp; OTA Updates</button>
+        <button class="nav-item" data-section="config">Configuration Manager</button>
+    </nav>
+
+    <main class="content">
+        <section class="section" data-section="overview">
+            <div class="kpi-grid" id="iotKpiGrid"></div>
+            <article class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">📋 Device Fleet Status &amp; Registry</div>
+                    <div class="panel-actions">
+                        <button class="btn btn-secondary" data-action="filter">Filter</button>
+                        <button class="btn btn-secondary" data-action="export">Export CSV</button>
+                        <button class="btn btn-primary" data-action="register">+ Register New Device</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="deviceTable">
+                        <thead>
+                            <tr>
+                                <th>Device ID</th>
+                                <th>House / Tenant</th>
+                                <th>Location</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Last Heartbeat</th>
+                                <th>Firmware</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </article>
+            <div class="grid-2col">
+                <article class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">📡 MQTT Network Health (AWS IoT Core)</div>
+                    </div>
+                    <div class="stats-grid" id="networkStats"></div>
+                    <div class="chart-placeholder">📊 Real-time MQTT Throughput Chart<br><span>(CloudWatch Metrics Integration)</span></div>
+                </article>
+                <article class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">🔄 Firmware OTA Update Queue</div>
+                    </div>
+                    <div class="update-list" id="firmwareQueue"></div>
+                    <button class="btn btn-primary" data-action="schedule-ota">📅 Schedule OTA Update Batch</button>
+                </article>
+            </div>
+        </section>
+
+        <section class="section hidden" data-section="registry">
+            <article class="panel section-placeholder">
+                <div class="panel-title">Device Registry Management</div>
+                <p>Search, filter, and tag devices across all residences. Integrates with AWS IoT Registry and DynamoDB metadata.</p>
+                <div class="search-bar">
+                    <input type="search" id="registrySearch" placeholder="Search by device ID or tenant">
+                    <button class="btn btn-primary" data-action="registry-search">Search</button>
+                </div>
+                <div id="registryResults" class="registry-results"></div>
+            </article>
+        </section>
+
+        <section class="section hidden" data-section="network">
+            <article class="panel section-placeholder">
+                <div class="panel-title">Network Health</div>
+                <p>Monitor MQTT connectivity, Wi-Fi strength, and packet loss across all homes.</p>
+                <button class="btn btn-secondary" data-action="refresh-network">Refresh Metrics</button>
+                <div class="network-metrics" id="networkMetrics"></div>
+            </article>
+        </section>
+
+        <section class="section hidden" data-section="firmware">
+            <article class="panel section-placeholder">
+                <div class="panel-title">Firmware &amp; OTA Pipeline</div>
+                <p>Manage staged rollouts, canary deployments, and rollback plans for each firmware version.</p>
+                <div class="firmware-controls">
+                    <label>Target Firmware Version
+                        <select id="firmwareVersion">
+                            <option value="2.4.1">2.4.1 (Stable)</option>
+                            <option value="2.5.0">2.5.0 (Canary)</option>
+                            <option value="2.3.8">2.3.8 (Legacy)</option>
+                        </select>
+                    </label>
+                    <button class="btn btn-primary" data-action="deploy-firmware">Deploy Selected</button>
+                </div>
+                <div class="firmware-log" id="firmwareLog"></div>
+            </article>
+        </section>
+
+        <section class="section hidden" data-section="config">
+            <article class="panel section-placeholder">
+                <div class="panel-title">Configuration Manager</div>
+                <p>Push configuration templates, rotate credentials, and manage per-device overrides.</p>
+                <form class="config-form" id="configForm">
+                    <label>Template Name
+                        <input type="text" name="template" required placeholder="Nightly-audio-threshold">
+                    </label>
+                    <label>Applies To
+                        <input type="text" name="appliesTo" required placeholder="Tenant IDs, device groups">
+                    </label>
+                    <label>MQTT Topic
+                        <input type="text" name="topic" required placeholder="iot/homes/+/config">
+                    </label>
+                    <label>Payload Preview
+                        <textarea name="payload" rows="6" required>{"sensitivity":0.82,"threshold":-40}</textarea>
+                    </label>
+                    <button class="btn btn-primary" type="submit">Publish Configuration</button>
+                </form>
+            </article>
+        </section>
+    </main>
+
+    <dialog class="modal" id="deviceDialog">
+        <form class="modal-content" id="deviceDialogForm">
+            <h2>Register New Device</h2>
+            <label>Device ID
+                <input type="text" name="deviceId" required placeholder="DEV-XYZ-000">
+            </label>
+            <label>Tenant
+                <input type="text" name="tenant" required placeholder="Johnson Residence (T-001)">
+            </label>
+            <label>Location
+                <input type="text" name="location" required placeholder="Living Room">
+            </label>
+            <label>Type
+                <select name="type" required>
+                    <option value="Audio Sensor">Audio Sensor</option>
+                    <option value="Video Camera">Video Camera</option>
+                    <option value="Multi-Sensor">Multi-Sensor</option>
+                    <option value="Door Sensor">Door Sensor</option>
+                </select>
+            </label>
+            <label>Status
+                <select name="status" required>
+                    <option value="online">Online</option>
+                    <option value="offline">Offline</option>
+                    <option value="warning">Warning</option>
+                </select>
+            </label>
+            <menu>
+                <button type="reset" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Device</button>
+            </menu>
+        </form>
+    </dialog>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/iot-fleet.js"></script>
+</body>
+</html>
