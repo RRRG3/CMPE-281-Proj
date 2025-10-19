@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - Smart Home Senior Care</title>
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/owner-dashboard.css">
+</head>
+<body class="owner-body">
+    <div class="header">
+        <div class="header-left">
+            <a class="logo" href="index.html" title="Back to login">🏠</a>
+            <div class="header-title">
+                <h1>Smart Home Senior Care Cloud</h1>
+                <div class="header-subtitle">Owner Dashboard - Johnson Residence</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="notification-icon" id="notificationButton" aria-label="View notifications">
+                🔔
+                <span class="notification-badge">3</span>
+            </button>
+            <div class="user-info" id="userMenuToggle" role="button" tabindex="0" aria-haspopup="true">
+                <div class="avatar">JD</div>
+                <div>
+                    <div class="user-name">John Doe</div>
+                    <div class="user-role">House Owner</div>
+                </div>
+            </div>
+            <div class="user-dropdown" id="userDropdown" hidden>
+                <a href="#" data-action="profile">Profile & Preferences</a>
+                <a href="#" data-action="support">Support</a>
+                <a href="index.html" data-action="logout">Log out</a>
+            </div>
+        </div>
+    </div>
+    <nav class="nav-bar" role="tablist">
+        <button class="nav-item active" role="tab" data-section="dashboard">Dashboard</button>
+        <button class="nav-item" role="tab" data-section="live-alerts">Live Alerts</button>
+        <button class="nav-item" role="tab" data-section="alert-history">Alert History</button>
+        <button class="nav-item" role="tab" data-section="reports">Reports &amp; Analytics</button>
+        <button class="nav-item" role="tab" data-section="settings">Settings &amp; Privacy</button>
+    </nav>
+    <main class="content">
+        <section class="section" data-section="dashboard">
+            <div class="kpi-grid" id="kpiGrid"></div>
+            <div class="main-grid">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">📢 Recent Activity &amp; Alerts</div>
+                        <div class="panel-actions">
+                            <button class="btn btn-secondary" id="alertFilterBtn">Filter</button>
+                            <a class="btn btn-primary" href="alert-detail.html">View All</a>
+                        </div>
+                    </div>
+                    <div class="alert-list" id="alertList"></div>
+                </div>
+                <div>
+                    <div class="panel quick-actions-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">⚡ Quick Actions</div>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="action-btn emergency" data-action="emergency">🔴 Emergency Call</button>
+                            <button class="action-btn success" data-action="acknowledge-all">✓ Acknowledge All Alerts</button>
+                            <button class="action-btn secondary" data-action="generate-report">📊 Generate Weekly Report</button>
+                            <button class="action-btn secondary" data-action="device-settings">🔧 Device Settings</button>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">📊 This Week Statistics</div>
+                        </div>
+                        <div class="stats-grid" id="weeklyStats"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">🎥 Connected Devices Overview</div>
+                    <button class="btn btn-primary" id="addDeviceBtn">+ Add New Device</button>
+                </div>
+                <div class="device-grid" id="deviceGrid"></div>
+            </div>
+        </section>
+        <section class="section hidden" data-section="live-alerts">
+            <div class="panel section-placeholder">
+                <div class="panel-title">Live Alerts Feed</div>
+                <p>Streaming live alerts from AWS IoT Core and SageMaker inference endpoints.</p>
+                <button class="btn btn-primary" data-action="simulate-live">Simulate Incoming Alert</button>
+                <div class="live-alert-stream" id="liveAlertStream"></div>
+            </div>
+        </section>
+        <section class="section hidden" data-section="alert-history">
+            <div class="panel section-placeholder">
+                <div class="panel-title">Alert History</div>
+                <p>Search historical alerts with filters for severity, device, and acknowledgement.</p>
+                <div class="history-controls">
+                    <input type="date" id="historyStart">
+                    <input type="date" id="historyEnd">
+                    <select id="historySeverity">
+                        <option value="">All Severities</option>
+                        <option value="critical">Critical</option>
+                        <option value="warning">Warning</option>
+                        <option value="info">Info</option>
+                    </select>
+                    <button class="btn btn-secondary" data-action="history-export">Export CSV</button>
+                </div>
+                <table class="history-table" id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Alert</th>
+                            <th>Device</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+        <section class="section hidden" data-section="reports">
+            <div class="panel section-placeholder">
+                <div class="panel-title">Reports &amp; Analytics</div>
+                <p>Generate monthly summaries, usage analytics, and AI performance reports.</p>
+                <div class="reports-grid">
+                    <button class="report-card" data-report="monthly">📅 Monthly Summary</button>
+                    <button class="report-card" data-report="behavioral">🧠 Behavioral Trends</button>
+                    <button class="report-card" data-report="accuracy">🎯 ML Accuracy</button>
+                    <button class="report-card" data-report="usage">⚙️ Device Usage</button>
+                </div>
+            </div>
+        </section>
+        <section class="section hidden" data-section="settings">
+            <div class="panel section-placeholder">
+                <div class="panel-title">Settings &amp; Privacy</div>
+                <form class="settings-form" id="settingsForm">
+                    <label>
+                        <span>Two-Factor Authentication</span>
+                        <input type="checkbox" name="mfa" checked>
+                    </label>
+                    <label>
+                        <span>Share alerts with family members</span>
+                        <input type="checkbox" name="shareAlerts" checked>
+                    </label>
+                    <label>
+                        <span>Quiet hours start</span>
+                        <input type="time" name="quietStart" value="22:00">
+                    </label>
+                    <label>
+                        <span>Quiet hours end</span>
+                        <input type="time" name="quietEnd" value="06:00">
+                    </label>
+                    <button class="btn btn-primary" type="submit">Save Preferences</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <dialog class="modal" id="deviceModal">
+        <form method="dialog" class="modal-content" id="deviceForm">
+            <h2>Add New Device</h2>
+            <label>
+                Device Name
+                <input type="text" name="name" required placeholder="Living Room Camera">
+            </label>
+            <label>
+                Location
+                <input type="text" name="location" required placeholder="Living Room">
+            </label>
+            <label>
+                Device Type
+                <select name="type" required>
+                    <option value="Audio Sensor">Audio Sensor</option>
+                    <option value="Video Camera">Video Camera</option>
+                    <option value="Motion Sensor">Motion Sensor</option>
+                    <option value="Door Sensor">Door Sensor</option>
+                </select>
+            </label>
+            <label>
+                Status
+                <select name="status" required>
+                    <option value="online">Online</option>
+                    <option value="offline">Offline</option>
+                </select>
+            </label>
+            <menu>
+                <button type="reset" class="btn btn-secondary" value="cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Device</button>
+            </menu>
+        </form>
+    </dialog>
+
+    <dialog class="modal" id="alertFilterModal">
+        <form method="dialog" class="modal-content" id="alertFilterForm">
+            <h2>Filter Alerts</h2>
+            <label>
+                Severity
+                <select name="severity">
+                    <option value="">All Severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="warning">Warning</option>
+                    <option value="info">Info</option>
+                </select>
+            </label>
+            <label>
+                Room
+                <input type="text" name="room" placeholder="Kitchen">
+            </label>
+            <label>
+                Acknowledged Only
+                <input type="checkbox" name="acknowledged">
+            </label>
+            <menu>
+                <button type="reset" class="btn btn-secondary" value="cancel">Clear</button>
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+            </menu>
+        </form>
+    </dialog>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/owner-dashboard.js"></script>
+</body>
+</html>
