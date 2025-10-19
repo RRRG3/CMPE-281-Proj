@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Dashboard - Smart Home Senior Care</title>
-    <link rel="stylesheet" href="assets/css/base.css">
-    <link rel="stylesheet" href="assets/css/owner-dashboard.css">
+    <link rel="stylesheet" href="/src/assets/css/base.css">
+    <link rel="stylesheet" href="/src/assets/css/owner-dashboard.css">
 </head>
 <body class="owner-body">
     <div class="header">
         <div class="header-left">
-            <a class="logo" href="index.html" title="Back to login">🏠</a>
+            <a class="logo" href="home.html" title="Back to home">🏠</a>
             <div class="header-title">
                 <h1>Smart Home Senior Care Cloud</h1>
                 <div class="header-subtitle">Owner Dashboard - Johnson Residence</div>
@@ -28,7 +28,7 @@
                     <div class="user-role">House Owner</div>
                 </div>
             </div>
-            <div class="user-dropdown" id="userDropdown" hidden>
+            <div class="user-dropdown" id="userDropdown">
                 <a href="#" data-action="profile">Profile & Preferences</a>
                 <a href="#" data-action="support">Support</a>
                 <a href="index.html" data-action="logout">Log out</a>
@@ -75,6 +75,12 @@
                         <div class="stats-grid" id="weeklyStats"></div>
                     </div>
                 </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">📈 Weekly Alert Trends</div>
+                </div>
+                <canvas id="alertChart"></canvas>
             </div>
             <div class="panel">
                 <div class="panel-header">
@@ -222,7 +228,7 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="assets/js/toast.js"></script>
-    <script src="assets/js/owner-dashboard.js"></script>
+    <script type="module" src="/src/assets/js/toast.js"></script>
+    <script type="module" src="/src/assets/js/owner-dashboard.js"></script>
 </body>
 </html>

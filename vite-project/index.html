@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Smart Home Senior Care Cloud</title>
+    <link rel="stylesheet" href="/src/assets/css/base.css">
+</head>
+<body class="login-body">
+    <main class="login-container">
+        <aside class="login-left">
+            <h1>Smart Home<br>Senior Care Cloud</h1>
+            <p>AI-powered monitoring and emergency response system for senior safety and well-being.</p>
+            <section class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon"><span role="img" aria-label="Audio Monitoring">🔊</span></div>
+                    <div class="feature-text">
+                        <h2 class="feature-title">Real-time Audio/Video Monitoring</h2>
+                        <div class="feature-desc">24/7 intelligent surveillance with ML pattern learning</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><span role="img" aria-label="Emergency Alert">🚨</span></div>
+                    <div class="feature-text">
+                        <h2 class="feature-title">Emergency Detection & Alerts</h2>
+                        <div class="feature-desc">Instant notifications for falls, unusual sounds, and emergencies</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><span role="img" aria-label="Dashboard">📊</span></div>
+                    <div class="feature-text">
+                        <h2 class="feature-title">Comprehensive Dashboard</h2>
+                        <div class="feature-desc">Real-time KPIs, reports, and analytics for all stakeholders</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><span role="img" aria-label="Security">🔒</span></div>
+                    <div class="feature-text">
+                        <h2 class="feature-title">Enterprise Security</h2>
+                        <div class="feature-desc">OAuth2 + JWT + MFA | TLS 1.3 | AES-256 encryption</div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+        <section class="login-right">
+            <header class="login-header">
+                <div class="logo"><span role="img" aria-label="Smart Home">🏠</span></div>
+                <h2>Welcome Back</h2>
+                <p>Sign in to access your dashboard</p>
+            </header>
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" class="form-input" id="username" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" class="form-input" id="password" placeholder="Enter your password" required>
+                </div>
+                <div class="forgot-password">
+                    <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+                </div>
+                <button type="submit" class="login-button">Sign In</button>
+            </form>
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span class="divider-text">SECURE LOGIN</span>
+                <div class="divider-line"></div>
+            </div>
+            <section class="security-badge">
+                <h3 class="security-badge-title"><span role="img" aria-label="Security">🔐</span> Enterprise-Grade Security</h3>
+                <div class="security-features">
+                    OAuth2 + JWT Authentication • Multi-Factor Authentication<br>
+                    TLS 1.3 Encryption • RBAC with Least Privilege • Full Audit Logs
+                </div>
+            </section>
+        </section>
+    </main>
+    <script type="module" src="/src/assets/js/toast.js"></script>
+    <script type="module" src="/src/assets/js/login.js"></script>
+</body>
+</html>

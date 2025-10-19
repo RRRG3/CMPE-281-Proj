@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IoT Fleet Manager - Smart Home Senior Care</title>
-    <link rel="stylesheet" href="assets/css/base.css">
-    <link rel="stylesheet" href="assets/css/iot-fleet.css">
+    <link rel="stylesheet" href="/src/assets/css/base.css">
+    <link rel="stylesheet" href="/src/assets/css/iot-fleet.css">
 </head>
 <body class="iot-body">
     <header class="header">
         <div class="header-left">
-            <a class="logo" href="index.html">🔧</a>
+            <a class="logo" href="home.html">🔧</a>
             <div class="header-title">
                 <h1>IoT Fleet Management Dashboard</h1>
                 <div class="header-subtitle">Device Registry &amp; Network Operations</div>
@@ -182,7 +182,34 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="assets/js/toast.js"></script>
-    <script src="assets/js/iot-fleet.js"></script>
+    <dialog class="modal" id="filterDialog">
+        <form class="modal-content" id="filterDialogForm">
+            <h2>Filter Devices</h2>
+            <label>Type
+                <select name="type">
+                    <option value="all">All Types</option>
+                    <option value="Audio Sensor">Audio Sensor</option>
+                    <option value="Video Camera">Video Camera</option>
+                    <option value="Multi-Sensor">Multi-Sensor</option>
+                    <option value="Door Sensor">Door Sensor</option>
+                </select>
+            </label>
+            <label>Status
+                <select name="status">
+                    <option value="all">All Statuses</option>
+                    <option value="success">Online</option>
+                    <option value="warning">Warning</option>
+                    <option value="danger">Offline</option>
+                </select>
+            </label>
+            <menu>
+                <button type="reset" class="btn btn-secondary">Clear</button>
+                <button type="submit" class="btn btn-primary">Apply Filter</button>
+            </menu>
+        </form>
+    </dialog>
+
+    <script type="module" src="/src/assets/js/toast.js"></script>
+    <script type="module" src="/src/assets/js/iot-fleet.js"></script>
 </body>
 </html>

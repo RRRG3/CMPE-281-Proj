@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Smart Home Senior Care</title>
+    <link rel="stylesheet" href="/src/assets/css/base.css">
+    <link rel="stylesheet" href="/src/assets/css/owner-dashboard.css">
+</head>
+<body class="owner-body">
+    <div class="header">
+        <div class="header-left">
+            <a class="logo" href="home.html" title="Back to home">⚙️</a>
+            <div class="header-title">
+                <h1>Smart Home Senior Care Cloud</h1>
+                <div class="header-subtitle">Admin Dashboard - System Operations</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="notification-icon" id="notificationButton" aria-label="View notifications">
+                🔔
+                <span class="notification-badge">1</span>
+            </button>
+            <div class="user-info" id="userMenuToggle" role="button" tabindex="0" aria-haspopup="true">
+                <div class="avatar">AD</div>
+                <div>
+                    <div class="user-name">Admin User</div>
+                    <div class="user-role">Cloud Service Admin</div>
+                </div>
+            </div>
+            <div class="user-dropdown" id="userDropdown">
+                <a href="#" data-action="profile">Profile & Preferences</a>
+                <a href="#" data-action="support">Support</a>
+                <a href="index.html" data-action="logout">Log out</a>
+            </div>
+        </div>
+    </div>
+    <nav class="nav-bar" role="tablist">
+        <button class="nav-item active" role="tab" data-section="dashboard">Dashboard</button>
+        <button class="nav-item" role="tab" data-section="tenants">Tenant Management</button>
+        <button class="nav-item" role="tab" data-section="ml-models">ML Models</button>
+        <button class="nav-item" role="tab" data-section="system-health">System Health</button>
+        <button class="nav-item" role="tab" data-section="logs">Audit Logs</button>
+    </nav>
+    <main class="content">
+        <section class="section" data-section="dashboard">
+            <div class="kpi-grid" id="kpiGrid"></div>
+            <div class="main-grid">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">📢 Recent System Events</div>
+                        <div class="panel-actions">
+                            <button class="btn btn-secondary" id="alertFilterBtn">Filter</button>
+                            <a class="btn btn-primary" href="#">View All</a>
+                        </div>
+                    </div>
+                    <div class="alert-list" id="alertList"></div>
+                </div>
+                <div>
+                    <div class="panel quick-actions-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">⚡ Quick Actions</div>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="action-btn emergency" data-action="emergency">🔴 Trigger System-Wide Alert</button>
+                            <button class="action-btn success" data-action="acknowledge-all">✓ Clear All Caches</button>
+                            <button class="action-btn secondary" data-action="generate-report">📊 Generate Health Report</button>
+                            <button class="action-btn secondary" data-action="device-settings">🔧 System Settings</button>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">📊 This Week Statistics</div>
+                        </div>
+                        <div class="stats-grid" id="weeklyStats"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="section hidden" data-section="tenants">
+            <div class="panel section-placeholder">
+                <div class="panel-title">Tenant Management</div>
+                <p>Manage all tenants, view their status, and configure their settings.</p>
+            </div>
+        </section>
+        <section class="section hidden" data-section="ml-models">
+            <div class="panel section-placeholder">
+                <div class="panel-title">ML Models</div>
+                <p>Monitor the performance of the machine learning models and deploy new versions.</p>
+            </div>
+        </section>
+        <section class="section hidden" data-section="system-health">
+            <div class="panel section-placeholder">
+                <div class="panel-title">System Health</div>
+                <p>View the real-time health of the entire system, including servers, databases, and services.</p>
+            </div>
+        </section>
+        <section class="section hidden" data-section="logs">
+            <div class="panel section-placeholder">
+                <div class="panel-title">Audit Logs</div>
+                <p>Review all system and user activity in the audit logs.</p>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script type="module" src="/src/assets/js/toast.js"></script>
+    <script type="module" src="/src/assets/js/owner-dashboard.js"></script>
+</body>
+</html>

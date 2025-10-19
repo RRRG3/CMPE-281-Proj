@@ -1,4 +1,7 @@
-(function () {
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
+
+document.addEventListener('DOMContentLoaded', () => {
   const kpiGrid = document.getElementById('kpiGrid');
   const alertList = document.getElementById('alertList');
   const weeklyStats = document.getElementById('weeklyStats');
@@ -197,17 +200,36 @@
     });
   }
 
-  function renderStats() {
-    if (!weeklyStats) return;
-    weeklyStats.innerHTML = '';
-    weeklyStatsData.forEach((stat) => {
-      const box = document.createElement('div');
-      box.className = 'stat-box';
-      box.innerHTML = `
-        <div class="stat-label">${stat.label}</div>
-        <div class="stat-value">${stat.value}</div>
-      `;
-      weeklyStats.appendChild(box);
+  function renderChart() {
+    const ctx = document.getElementById('alertChart');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Alerts',
+          data: [12, 19, 3, 5, 2, 3, 9],
+          backgroundColor: 'rgba(0, 122, 255, 0.1)',
+          borderColor: 'rgba(0, 122, 255, 1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
     });
   }
 
@@ -410,12 +432,7 @@
 
     if (userMenuToggle && userDropdown) {
       const toggleDropdown = () => {
-        const isHidden = userDropdown.hasAttribute('hidden');
-        if (isHidden) {
-          userDropdown.removeAttribute('hidden');
-        } else {
-          userDropdown.setAttribute('hidden', '');
-        }
+        userDropdown.classList.toggle('visible');
       };
 
       userMenuToggle.addEventListener('click', toggleDropdown);
@@ -428,7 +445,7 @@
 
       document.addEventListener('click', (event) => {
         if (!userMenuToggle.contains(event.target) && !userDropdown.contains(event.target)) {
-          userDropdown.setAttribute('hidden', '');
+          userDropdown.classList.remove('visible');
         }
       });
     }
@@ -438,7 +455,7 @@
     if (!kpiGrid) return; // guard for other pages
     renderKpis();
     renderAlerts();
-    renderStats();
+    renderChart();
     renderDevices();
     renderHistory();
     initNav();
@@ -451,5 +468,5 @@
     initHeaderActions();
   }
 
-  document.addEventListener('DOMContentLoaded', initPage);
-})();
+  initPage();
+});

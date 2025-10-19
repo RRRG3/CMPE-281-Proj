@@ -125,11 +125,11 @@
     });
   }
 
-  function renderDeviceTable() {
+  function renderDeviceTable(filteredDevices = deviceRows) {
     const tbody = document.querySelector('#deviceTable tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
-    deviceRows.forEach((device) => {
+    filteredDevices.forEach((device) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td class="device-id">${device.deviceId}</td>
@@ -210,13 +210,15 @@
   function initGlobalButtons() {
     const dialog = document.getElementById('deviceDialog');
     const dialogForm = document.getElementById('deviceDialogForm');
+    const filterDialog = document.getElementById('filterDialog');
+    const filterDialogForm = document.getElementById('filterDialogForm');
 
     document.querySelectorAll('[data-action]').forEach((button) => {
       button.addEventListener('click', () => {
         const action = button.dataset.action;
         switch (action) {
           case 'filter':
-            toast('Filter controls opened.', 'info');
+            if (filterDialog?.showModal) filterDialog.showModal();
             break;
           case 'export':
             toast('Device registry exported to CSV.', 'success');
@@ -272,6 +274,31 @@
       dialogForm.addEventListener('reset', () => {
         dialog.close();
       });
+    }
+
+    if (filterDialogForm) {
+        filterDialogForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const formData = new FormData(filterDialogForm);
+            const type = formData.get('type');
+            const status = formData.get('status');
+
+            const filteredDevices = deviceRows.filter(device => {
+                const typeMatch = type === 'all' || device.type === type;
+                const statusMatch = status === 'all' || device.status === status;
+                return typeMatch && statusMatch;
+            });
+
+            renderDeviceTable(filteredDevices);
+            toast('Filter applied.', 'success');
+            filterDialog.close();
+        });
+
+        filterDialogForm.addEventListener('reset', () => {
+            renderDeviceTable();
+            toast('Filter cleared.', 'info');
+            filterDialog.close();
+        });
     }
   }
 
