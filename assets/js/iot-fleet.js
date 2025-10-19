@@ -108,6 +108,20 @@
     }
   ];
 
+  function normalizeStatus(status) {
+    const value = String(status || '').toLowerCase();
+    switch (value) {
+      case 'online':
+        return 'success';
+      case 'offline':
+        return 'danger';
+      case 'warning':
+        return 'warning';
+      default:
+        return 'warning';
+    }
+  }
+
   function renderKpis() {
     const grid = document.getElementById('iotKpiGrid');
     if (!grid) return;
@@ -258,7 +272,7 @@
           tenant: formData.get('tenant'),
           location: formData.get('location'),
           type: formData.get('type'),
-          status: formData.get('status'),
+          status: normalizeStatus(formData.get('status')),
           heartbeat: 'Just registered',
           firmware: 'v2.4.1'
         };
