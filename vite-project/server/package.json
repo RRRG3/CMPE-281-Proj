@@ -1,0 +1,19 @@
+{
+  "name": "alert-monitor-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "nanoid": "^5.0.9",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

@@ -91,11 +91,30 @@
             </div>
         </section>
         <section class="section hidden" data-section="live-alerts">
-            <div class="panel section-placeholder">
-                <div class="panel-title">Live Alerts Feed</div>
-                <p>Streaming live alerts from AWS IoT Core and SageMaker inference endpoints.</p>
-                <button class="btn btn-primary" data-action="simulate-live">Simulate Incoming Alert</button>
-                <div class="live-alert-stream" id="liveAlertStream"></div>
+            <div class="panel">
+                <h2>Alerts <small>(<span id="alerts-count">0</span>)</small></h2>
+                
+                <div class="toolbar">
+                    <button id="gen-glass" class="btn btn-secondary">Generate Glass Break</button>
+                    <button id="gen-smoke" class="btn btn-secondary">Generate Smoke Alarm</button>
+                    <button id="gen-dog" class="btn btn-secondary">Generate Dog Bark</button>
+                    
+                    <label style="margin-left:1rem;">Status:
+                        <select id="filter-status">
+                            <option value="">All</option>
+                            <option>open</option>
+                            <option>acknowledged</option>
+                            <option>resolved</option>
+                        </select>
+                    </label>
+                </div>
+                
+                <table class="table">
+                    <thead>
+                        <tr><th>Time</th><th>Type</th><th>House</th><th>Severity</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody id="alerts-tbody"></tbody>
+                </table>
             </div>
         </section>
         <section class="section hidden" data-section="alert-history">
@@ -230,5 +249,6 @@
 
     <script type="module" src="/src/assets/js/toast.js"></script>
     <script type="module" src="/src/assets/js/owner-dashboard.js"></script>
+    <script type="module" src="/src/assets/js/alerts-list.js"></script>
 </body>
 </html>

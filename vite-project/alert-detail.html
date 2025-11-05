@@ -73,11 +73,29 @@
                 </article>
             </section>
         </div>
+
+        <!-- Live Alert Detail Section -->
+        <section style="margin-top: 2rem;">
+            <article class="panel">
+                <h2>Live Alert Detail</h2>
+                <div id="alert-meta" class="card" style="padding: 1rem; margin: 1rem 0; border: 1px solid #ddd; border-radius: 8px;"></div>
+                
+                <div class="actions" style="margin:12px 0;">
+                    <button id="btn-ack" class="btn btn-primary">Acknowledge</button>
+                    <button id="btn-resolve" class="btn btn-primary">Resolve</button>
+                    <a href="owner-dashboard.html" style="margin-left:8px;">← Back to list</a>
+                </div>
+                
+                <h3>History</h3>
+                <ul id="alert-history" style="list-style: none; padding: 0;"></ul>
+            </article>
+        </section>
     </main>
 
     <div class="toast-container" id="toastContainer"></div>
 
     <script type="module" src="/src/assets/js/toast.js"></script>
     <script type="module" src="/src/assets/js/alert-detail.js"></script>
+    <script type="module" src="/src/assets/js/alert-detail-live.js"></script>
 </body>
 </html>
