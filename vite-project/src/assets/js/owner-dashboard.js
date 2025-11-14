@@ -1,7 +1,9 @@
 import { Chart, registerables } from 'chart.js';
+import { post, get } from './api.js';
+
 Chart.register(...registerables);
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const kpiGrid = document.getElementById('kpiGrid');
   const alertList = document.getElementById('alertList');
   const weeklyStats = document.getElementById('weeklyStats');
@@ -11,6 +13,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const alertFilterModal = document.getElementById('alertFilterModal');
   const alertFilterForm = document.getElementById('alertFilterForm');
   const toast = window.showToast || (() => {});
+
+  // Fetch real alerts from backend
+  let realAlerts = [];
+  try {
+    const response = await post('/api/v1/alerts/search', { limit: 10 });
+    realAlerts = response.items || [];
+  } catch (err) {
+    console.error('Failed to load alerts:', err);
+  }
 
   const kpis = [
     {
@@ -43,36 +54,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   ];
 
-  const alertItems = [
-    {
-      type: 'warning',
-      icon: '🔊',
-      title: 'Unusual Noise Pattern - Kitchen',
-      meta: 'ML Confidence: 72% | Device: KITCHEN-MIC-02 | Audio recorded',
-      time: '1 hour ago'
-    },
-    {
-      type: 'info',
-      icon: '🐕',
-      title: 'Pet Activity Detected - Living Room',
-      meta: 'Normal pattern | Device: LR-CAM-03 | No action required',
-      time: '3 hours ago'
-    },
-    {
-      type: 'info',
-      icon: '🚪',
-      title: 'Door Opened - Main Entrance',
-      meta: 'Expected time window | Device: DOOR-SENSOR-01',
-      time: '5 hours ago'
-    },
-    {
-      type: 'warning',
-      icon: '📱',
-      title: 'No Movement Detected - 2+ Hours',
-      meta: 'Bedroom zone | AI behavioral monitoring active',
-      time: '6 hours ago'
-    }
-  ];
+  // Convert real alerts to display format
+  function getAlertIcon(type, severity) {
+    if (type === 'glass_break') return '🔊';
+    if (type === 'smoke_alarm') return '🔥';
+    if (type === 'dog_bark') return '🐕';
+    if (severity === 'critical') return '🚨';
+    if (severity === 'high') return '⚠️';
+    return '📢';
+  }
+
+  function getAlertType(severity) {
+    if (severity === 'critical') return 'danger';
+    if (severity === 'high') return 'warning';
+    return 'info';
+  }
+
+  function formatTimeAgo(timestamp) {
+    const now = new Date();
+    const then = new Date(timestamp);
+    const diffMs = now - then;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return then.toLocaleDateString();
+  }
+
+  const alertItems = realAlerts.slice(0, 4).map(alert => ({
+    id: alert.id,
+    type: getAlertType(alert.severity),
+    icon: getAlertIcon(alert.type, alert.severity),
+    title: `${alert.type.replace(/_/g, ' ').toUpperCase()} - ${alert.house_id}`,
+    meta: `Severity: ${alert.severity} | Device: ${alert.device_id} | ${alert.message || 'No message'}`,
+    time: formatTimeAgo(alert.ts)
+  }));
 
   const weeklyStatsData = [
     { label: 'Total Alerts', value: '32' },
@@ -182,6 +200,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderAlerts(list = alertItems) {
     if (!alertList) return;
     alertList.innerHTML = '';
+    
+    if (list.length === 0) {
+      alertList.innerHTML = '<p style="padding: 1rem; text-align: center; color: #666;">No recent alerts</p>';
+      return;
+    }
+    
     list.forEach((alert) => {
       const item = document.createElement('article');
       item.className = `alert-item ${alert.type}`;
@@ -193,8 +217,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="alert-time">${alert.time}</div>
       `;
+      item.style.cursor = 'pointer';
       item.addEventListener('click', () => {
-        window.location.href = 'alert-detail.html';
+        // Use the real alert ID if available
+        const alertId = alert.id || '';
+        window.location.href = `alert-detail.html${alertId ? '?id=' + alertId : ''}`;
       });
       alertList.appendChild(item);
     });
@@ -239,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     deviceData.forEach((device) => {
       const card = document.createElement('article');
       card.className = 'device-card';
+      card.style.cursor = 'pointer';
       card.innerHTML = `
         <div class="device-status">
             <div class="status-dot ${device.status}"></div>
@@ -249,7 +277,14 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="device-info">${device.type}</div>
         <div class="device-info">⏱️ ${device.lastSeen}</div>
       `;
-      card.addEventListener('click', () => toast(`${device.name} details opened`, 'success'));
+      card.addEventListener('click', () => {
+        toast(`📱 Opening ${device.name} details...`, 'info');
+        console.log('[OWNER] Device clicked:', device);
+        // Could redirect to device detail page or open modal
+        setTimeout(() => {
+          toast(`Device: ${device.name} | Status: ${device.status} | Location: ${device.location}`, 'success');
+        }, 500);
+      });
       deviceGrid.appendChild(card);
     });
   }

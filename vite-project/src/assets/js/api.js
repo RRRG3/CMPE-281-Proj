@@ -1,5 +1,8 @@
 const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
-export const API_BASE = isLocal ? 'http://localhost:5174' : ''; // '' means same-origin behind Nginx
+
+// For local development, use localhost:3000
+// For production, replace with your EC2 IP: 'http://YOUR_EC2_IP' or 'http://YOUR_EC2_IP:3000'
+export const API_BASE = isLocal ? 'http://localhost:3000' : 'http://localhost:3000'; // TODO: Replace with EC2 IP after deployment
 
 export async function post(path, body) {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -18,7 +21,7 @@ export async function get(path) {
 }
 
 export function wsUrl() {
-  if (isLocal) return 'ws://localhost:5174/ws';
-  const proto = (location.protocol === 'https:') ? 'wss://' : 'ws://';
-  return `${proto}${location.host}/ws`;
+  if (isLocal) return 'ws://localhost:3000/ws';
+  // For production, replace with your EC2 IP
+  return 'ws://localhost:3000/ws'; // TODO: Replace with EC2 IP after deployment
 }

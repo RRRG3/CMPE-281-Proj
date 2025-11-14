@@ -5,7 +5,7 @@ import Database from 'better-sqlite3';
 import { WebSocketServer } from 'ws';
 import { nanoid } from 'nanoid';
 
-const PORT = process.env.PORT || 5174;
+const PORT = process.env.PORT || 3000;
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -37,6 +37,20 @@ CREATE TABLE IF NOT EXISTS alert_history (
   note TEXT,
   ts TEXT
 );
+CREATE TABLE IF NOT EXISTS devices (
+  id TEXT PRIMARY KEY,
+  device_id TEXT UNIQUE,
+  tenant TEXT,
+  location TEXT,
+  type TEXT,
+  status TEXT,
+  heartbeat TEXT,
+  firmware TEXT,
+  config TEXT,
+  last_seen TEXT,
+  created_at TEXT,
+  updated_at TEXT
+);
 `);
 
 const RULES = { glass_break: 'high', smoke_alarm: 'critical', dog_bark: 'low' };
@@ -56,6 +70,19 @@ const insertHistory = db.prepare(`
   INSERT INTO alert_history (id, alert_id, action, actor, note, ts)
   VALUES (@id, @alert_id, @action, @actor, @note, @ts)
 `);
+
+// Device prepared statements
+const insertDevice = db.prepare(`
+  INSERT INTO devices (id, device_id, tenant, location, type, status, heartbeat, firmware, config, last_seen, created_at, updated_at)
+  VALUES (@id, @device_id, @tenant, @location, @type, @status, @heartbeat, @firmware, @config, @last_seen, @created_at, @updated_at)
+`);
+const updateDevice = db.prepare(`
+  UPDATE devices SET tenant=@tenant, location=@location, type=@type, status=@status, 
+    heartbeat=@heartbeat, firmware=@firmware, config=@config, last_seen=@last_seen, updated_at=@updated_at
+  WHERE id=@id
+`);
+const selectDevice = db.prepare(`SELECT * FROM devices WHERE id = ?`);
+const selectAllDevices = db.prepare(`SELECT * FROM devices ORDER BY created_at DESC`);
 
 function nowISO() { return new Date().toISOString(); }
 
@@ -126,9 +153,125 @@ app.post('/api/v1/alerts/:id/resolve', (req, res) => {
   res.json({ status: updated?.status || 'resolved' });
 });
 
+// ============ DEVICE MANAGEMENT ENDPOINTS ============
+
+// POST /api/v1/devices - Register a new device
+app.post('/api/v1/devices', (req, res) => {
+  const { deviceId, tenant, location, type, status='online', firmware='v2.4.1', config={} } = req.body || {};
+  
+  if (!deviceId) return res.status(400).json({ error: 'deviceId required' });
+  if (!tenant) return res.status(400).json({ error: 'tenant required' });
+  if (!location) return res.status(400).json({ error: 'location required' });
+  if (!type) return res.status(400).json({ error: 'type required' });
+  
+  const device = {
+    id: nanoid(),
+    device_id: deviceId,
+    tenant,
+    location,
+    type,
+    status,
+    heartbeat: 'Just registered',
+    firmware,
+    config: JSON.stringify(config),
+    last_seen: nowISO(),
+    created_at: nowISO(),
+    updated_at: nowISO()
+  };
+  
+  try {
+    insertDevice.run(device);
+    const created = selectDevice.get(device.id);
+    console.log(`[device] Registered ${deviceId} for ${tenant} at ${location}`);
+    broadcast('device.created', created);
+    res.status(201).json(created);
+  } catch (err) {
+    if (err.message.includes('UNIQUE constraint')) {
+      return res.status(409).json({ error: 'Device ID already exists' });
+    }
+    console.error('Device creation error:', err);
+    res.status(500).json({ error: 'Failed to create device' });
+  }
+});
+
+// GET /api/v1/devices - List all devices
+app.get('/api/v1/devices', (req, res) => {
+  const devices = selectAllDevices.all();
+  res.json({ items: devices, count: devices.length });
+});
+
+// GET /api/v1/devices/:id - Get device details
+app.get('/api/v1/devices/:id', (req, res) => {
+  const device = selectDevice.get(req.params.id);
+  if (!device) return res.status(404).json({ error: 'Device not found' });
+  res.json(device);
+});
+
+// PUT /api/v1/devices/:id - Update device configuration
+app.put('/api/v1/devices/:id', (req, res) => {
+  const id = req.params.id;
+  const existing = selectDevice.get(id);
+  
+  if (!existing) return res.status(404).json({ error: 'Device not found' });
+  
+  const { tenant, location, type, status, firmware, config } = req.body || {};
+  
+  const updated = {
+    id,
+    tenant: tenant || existing.tenant,
+    location: location || existing.location,
+    type: type || existing.type,
+    status: status || existing.status,
+    heartbeat: existing.heartbeat,
+    firmware: firmware || existing.firmware,
+    config: config ? JSON.stringify(config) : existing.config,
+    last_seen: nowISO(),
+    updated_at: nowISO()
+  };
+  
+  updateDevice.run(updated);
+  const result = selectDevice.get(id);
+  console.log(`[device] Updated ${result.device_id}: config=${updated.config}`);
+  broadcast('device.updated', result);
+  res.json(result);
+});
+
+// DELETE /api/v1/devices/:id - Remove device
+app.delete('/api/v1/devices/:id', (req, res) => {
+  const device = selectDevice.get(req.params.id);
+  if (!device) return res.status(404).json({ error: 'Device not found' });
+  
+  db.prepare('DELETE FROM devices WHERE id = ?').run(req.params.id);
+  console.log(`[device] Deleted ${device.device_id}`);
+  broadcast('device.deleted', { id: req.params.id });
+  res.json({ success: true, message: 'Device deleted' });
+});
+
+// POST /api/v1/devices/:id/heartbeat - Simulate device heartbeat (MQTT simulation)
+app.post('/api/v1/devices/:id/heartbeat', (req, res) => {
+  const device = selectDevice.get(req.params.id);
+  if (!device) return res.status(404).json({ error: 'Device not found' });
+  
+  const { status='online' } = req.body || {};
+  const ts = nowISO();
+  
+  db.prepare('UPDATE devices SET status=?, last_seen=?, heartbeat=? WHERE id=?')
+    .run(status, ts, 'Just now', req.params.id);
+  
+  const updated = selectDevice.get(req.params.id);
+  console.log(`[mqtt-sim] device/${device.device_id}/status: ${status} at ${ts}`);
+  broadcast('device.heartbeat', updated);
+  res.json({ success: true, last_seen: ts, status });
+});
+
 // HTTP + WS
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
 wss.on('connection', (ws) => ws.send(JSON.stringify({ type: 'hello', payload: 'connected' })));
 
-server.listen(PORT, () => console.log(`API at http://localhost:${PORT}  WS at ws://localhost:${PORT}/ws`));
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`📡 API: http://0.0.0.0:${PORT}`);
+  console.log(`🔌 WebSocket: ws://0.0.0.0:${PORT}/ws`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+});

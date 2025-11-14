@@ -78,27 +78,284 @@
             </div>
         </section>
         <section class="section hidden" data-section="tenants">
-            <div class="panel section-placeholder">
-                <div class="panel-title">Tenant Management</div>
-                <p>Manage all tenants, view their status, and configure their settings.</p>
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">🏢 Tenant Management</div>
+                    <button class="btn btn-primary">+ Add New Tenant</button>
+                </div>
+                <p style="margin: 1rem 0; color: #666;">Manage all tenants, view their status, and configure their settings.</p>
+                <table class="table" style="width: 100%; margin-top: 1rem;">
+                    <thead>
+                        <tr>
+                            <th>Tenant ID</th>
+                            <th>Name</th>
+                            <th>Devices</th>
+                            <th>Status</th>
+                            <th>Alerts (30d)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>T-001</td>
+                            <td>Johnson Residence</td>
+                            <td>8 devices</td>
+                            <td><span class="badge success">Active</span></td>
+                            <td>32 alerts</td>
+                            <td><button class="btn btn-secondary">Manage</button></td>
+                        </tr>
+                        <tr>
+                            <td>T-002</td>
+                            <td>Green Valley Senior</td>
+                            <td>12 devices</td>
+                            <td><span class="badge success">Active</span></td>
+                            <td>45 alerts</td>
+                            <td><button class="btn btn-secondary">Manage</button></td>
+                        </tr>
+                        <tr>
+                            <td>T-003</td>
+                            <td>Sunrise Assisted</td>
+                            <td>24 devices</td>
+                            <td><span class="badge success">Active</span></td>
+                            <td>67 alerts</td>
+                            <td><button class="btn btn-secondary">Manage</button></td>
+                        </tr>
+                        <tr>
+                            <td>T-004</td>
+                            <td>Oak Tree Manor</td>
+                            <td>6 devices</td>
+                            <td><span class="badge warning">Trial</span></td>
+                            <td>18 alerts</td>
+                            <td><button class="btn btn-secondary">Manage</button></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </section>
+        
         <section class="section hidden" data-section="ml-models">
-            <div class="panel section-placeholder">
-                <div class="panel-title">ML Models</div>
-                <p>Monitor the performance of the machine learning models and deploy new versions.</p>
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">🤖 ML Models Performance</div>
+                    <button class="btn btn-primary">Deploy New Model</button>
+                </div>
+                <p style="margin: 1rem 0; color: #666;">Monitor the performance of machine learning models and deploy new versions.</p>
+                <div class="stats-grid" style="margin: 1.5rem 0;">
+                    <div class="stat-box">
+                        <div class="stat-label">Audio Classification</div>
+                        <div class="stat-value" style="color: #10b981;">94.2%</div>
+                        <small>Accuracy</small>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Fall Detection</div>
+                        <div class="stat-value" style="color: #10b981;">96.8%</div>
+                        <small>Accuracy</small>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Anomaly Detection</div>
+                        <div class="stat-value" style="color: #f59e0b;">87.3%</div>
+                        <small>Accuracy</small>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">False Positives</div>
+                        <div class="stat-value" style="color: #10b981;">3.2%</div>
+                        <small>Rate</small>
+                    </div>
+                </div>
+                <table class="table" style="width: 100%; margin-top: 1rem;">
+                    <thead>
+                        <tr>
+                            <th>Model Name</th>
+                            <th>Version</th>
+                            <th>Status</th>
+                            <th>Deployed</th>
+                            <th>Accuracy</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Audio Classifier v3</td>
+                            <td>3.2.1</td>
+                            <td><span class="badge success">Production</span></td>
+                            <td>2025-10-01</td>
+                            <td>94.2%</td>
+                            <td><button class="btn btn-secondary">Details</button></td>
+                        </tr>
+                        <tr>
+                            <td>Fall Detection v2</td>
+                            <td>2.5.0</td>
+                            <td><span class="badge success">Production</span></td>
+                            <td>2025-09-15</td>
+                            <td>96.8%</td>
+                            <td><button class="btn btn-secondary">Details</button></td>
+                        </tr>
+                        <tr>
+                            <td>Anomaly Detector v1</td>
+                            <td>1.8.3</td>
+                            <td><span class="badge warning">Canary</span></td>
+                            <td>2025-10-10</td>
+                            <td>87.3%</td>
+                            <td><button class="btn btn-secondary">Details</button></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </section>
+        
         <section class="section hidden" data-section="system-health">
-            <div class="panel section-placeholder">
-                <div class="panel-title">System Health</div>
-                <p>View the real-time health of the entire system, including servers, databases, and services.</p>
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">💚 System Health Monitor</div>
+                    <button class="btn btn-secondary">Refresh Metrics</button>
+                </div>
+                <p style="margin: 1rem 0; color: #666;">Real-time health of all system components and AWS services.</p>
+                <div class="stats-grid" style="margin: 1.5rem 0;">
+                    <div class="stat-box">
+                        <div class="stat-label">API Gateway</div>
+                        <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
+                        <small>99.9% uptime</small>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">RDS Database</div>
+                        <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
+                        <small>12ms latency</small>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">IoT Core</div>
+                        <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
+                        <small>340 connections</small>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Lambda Functions</div>
+                        <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
+                        <small>0 errors</small>
+                    </div>
+                </div>
+                <h3 style="margin: 2rem 0 1rem;">AWS Services Status</h3>
+                <table class="table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Region</th>
+                            <th>Metrics</th>
+                            <th>Last Check</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>🌐 API Gateway</td>
+                            <td><span class="badge success">Operational</span></td>
+                            <td>us-west-2</td>
+                            <td>1,247 req/min</td>
+                            <td>Just now</td>
+                        </tr>
+                        <tr>
+                            <td>🗄️ RDS PostgreSQL</td>
+                            <td><span class="badge success">Operational</span></td>
+                            <td>us-west-2</td>
+                            <td>45 connections</td>
+                            <td>30 sec ago</td>
+                        </tr>
+                        <tr>
+                            <td>📡 IoT Core</td>
+                            <td><span class="badge success">Operational</span></td>
+                            <td>us-west-2</td>
+                            <td>340 devices</td>
+                            <td>15 sec ago</td>
+                        </tr>
+                        <tr>
+                            <td>⚡ Lambda</td>
+                            <td><span class="badge success">Operational</span></td>
+                            <td>us-west-2</td>
+                            <td>523 invocations</td>
+                            <td>Just now</td>
+                        </tr>
+                        <tr>
+                            <td>📦 S3 Storage</td>
+                            <td><span class="badge success">Operational</span></td>
+                            <td>us-west-2</td>
+                            <td>2.3 GB used</td>
+                            <td>1 min ago</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </section>
+        
         <section class="section hidden" data-section="logs">
-            <div class="panel section-placeholder">
-                <div class="panel-title">Audit Logs</div>
-                <p>Review all system and user activity in the audit logs.</p>
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">📋 Audit Logs</div>
+                    <div class="panel-actions">
+                        <button class="btn btn-secondary">Filter</button>
+                        <button class="btn btn-secondary">Export</button>
+                    </div>
+                </div>
+                <p style="margin: 1rem 0; color: #666;">Review all system and user activity. Logs are retained for 90 days.</p>
+                <table class="table" style="width: 100%; margin-top: 1rem;">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Resource</th>
+                            <th>Status</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2025-11-12 21:45:32</td>
+                            <td>admin@example.com</td>
+                            <td>LOGIN</td>
+                            <td>Admin Dashboard</td>
+                            <td><span class="badge success">Success</span></td>
+                            <td>192.168.1.100</td>
+                        </tr>
+                        <tr>
+                            <td>2025-11-12 21:30:15</td>
+                            <td>system</td>
+                            <td>ALERT_CREATED</td>
+                            <td>Alert ID: abc123</td>
+                            <td><span class="badge success">Success</span></td>
+                            <td>10.0.1.50</td>
+                        </tr>
+                        <tr>
+                            <td>2025-11-12 21:15:08</td>
+                            <td>owner@johnson.com</td>
+                            <td>DEVICE_CONFIGURED</td>
+                            <td>Device: DEV-LR-001</td>
+                            <td><span class="badge success">Success</span></td>
+                            <td>73.45.123.89</td>
+                        </tr>
+                        <tr>
+                            <td>2025-11-12 21:00:42</td>
+                            <td>system</td>
+                            <td>FIRMWARE_UPDATE</td>
+                            <td>Device: DEV-KIT-003</td>
+                            <td><span class="badge success">Success</span></td>
+                            <td>10.0.1.50</td>
+                        </tr>
+                        <tr>
+                            <td>2025-11-12 20:45:19</td>
+                            <td>admin@example.com</td>
+                            <td>TENANT_CREATED</td>
+                            <td>Tenant: T-005</td>
+                            <td><span class="badge success">Success</span></td>
+                            <td>192.168.1.100</td>
+                        </tr>
+                        <tr>
+                            <td>2025-11-12 20:30:55</td>
+                            <td>system</td>
+                            <td>BACKUP_COMPLETED</td>
+                            <td>Database: smarthome</td>
+                            <td><span class="badge success">Success</span></td>
+                            <td>10.0.1.50</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </section>
     </main>
@@ -106,6 +363,6 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script type="module" src="/src/assets/js/toast.js"></script>
-    <script type="module" src="/src/assets/js/owner-dashboard.js"></script>
+    <script type="module" src="/src/assets/js/admin-dashboard.js"></script>
 </body>
 </html>

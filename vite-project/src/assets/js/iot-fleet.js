@@ -1,87 +1,45 @@
+import { get, post, API_BASE } from './api.js';
+
 (function () {
   const toast = window.showToast || (() => {});
 
-  const kpis = [
-    { label: 'Total Devices', value: 347, trend: 'Across 42 homes', tone: '#10b981' },
-    { label: 'Online Devices', value: 340, trend: '98.0% availability', tone: '#10b981' },
-    { label: 'Offline Devices', value: 7, trend: '⚠ Requires attention', tone: '#ef4444' },
-    { label: 'Pending Updates', value: 23, trend: 'Firmware v2.4.1 available', tone: '#f59e0b' }
-  ];
+  let deviceRows = [];
 
-  const deviceRows = [
-    {
-      deviceId: 'DEV-LR-001',
-      tenant: 'Johnson Residence (T-001)',
-      location: 'Living Room',
-      type: 'Audio Sensor',
-      status: 'success',
-      heartbeat: '30 seconds ago',
-      firmware: 'v2.4.1'
-    },
-    {
-      deviceId: 'DEV-BED-002',
-      tenant: 'Johnson Residence (T-001)',
-      location: 'Bedroom',
-      type: 'Video Camera',
-      status: 'success',
-      heartbeat: '1 minute ago',
-      firmware: 'v2.4.1'
-    },
-    {
-      deviceId: 'DEV-KIT-003',
-      tenant: 'Johnson Residence (T-001)',
-      location: 'Kitchen',
-      type: 'Audio/Motion',
-      status: 'danger',
-      heartbeat: '2 hours ago',
-      firmware: 'v2.3.8'
-    },
-    {
-      deviceId: 'DEV-GV-104',
-      tenant: 'Green Valley Senior (T-002)',
-      location: 'Common Area',
-      type: 'Multi-Sensor',
-      status: 'success',
-      heartbeat: '15 seconds ago',
-      firmware: 'v2.4.0'
-    },
-    {
-      deviceId: 'DEV-GV-105',
-      tenant: 'Green Valley Senior (T-002)',
-      location: 'Room 101',
-      type: 'Audio Sensor',
-      status: 'warning',
-      heartbeat: '5 minutes ago',
-      firmware: 'v2.2.5'
-    },
-    {
-      deviceId: 'DEV-SR-201',
-      tenant: 'Sunrise Assisted (T-003)',
-      location: 'Building A',
-      type: 'Video Camera',
-      status: 'success',
-      heartbeat: '45 seconds ago',
-      firmware: 'v2.4.1'
-    },
-    {
-      deviceId: 'DEV-SR-202',
-      tenant: 'Sunrise Assisted (T-003)',
-      location: 'Building B',
-      type: 'Multi-Sensor',
-      status: 'success',
-      heartbeat: '22 seconds ago',
-      firmware: 'v2.4.1'
-    },
-    {
-      deviceId: 'DEV-OT-301',
-      tenant: 'Oak Tree Manor (T-004)',
-      location: 'Main Hall',
-      type: 'Audio Sensor',
-      status: 'danger',
-      heartbeat: '3 hours ago',
-      firmware: 'v2.3.5'
+  // Load devices from API
+  async function loadDevices() {
+    try {
+      const response = await get('/api/v1/devices');
+      deviceRows = response.items.map(d => ({
+        id: d.id,
+        deviceId: d.device_id,
+        tenant: d.tenant,
+        location: d.location,
+        type: d.type,
+        status: d.status === 'online' ? 'success' : d.status === 'offline' ? 'danger' : 'warning',
+        heartbeat: d.heartbeat,
+        firmware: d.firmware
+      }));
+      renderKpis();
+      renderDeviceTable();
+    } catch (err) {
+      console.error('Failed to load devices:', err);
+      toast('Failed to load devices from server', 'error');
     }
-  ];
+  }
+
+  function calculateKpis() {
+    const total = deviceRows.length;
+    const online = deviceRows.filter(d => d.status === 'success').length;
+    const offline = deviceRows.filter(d => d.status === 'danger').length;
+    const needsUpdate = deviceRows.filter(d => d.firmware !== 'v2.4.1').length;
+    
+    return [
+      { label: 'Total Devices', value: total, trend: 'Across all homes', tone: '#10b981' },
+      { label: 'Online Devices', value: online, trend: `${total ? Math.round(online/total*100) : 0}% availability`, tone: '#10b981' },
+      { label: 'Offline Devices', value: offline, trend: offline > 0 ? '⚠ Requires attention' : 'All online', tone: offline > 0 ? '#ef4444' : '#10b981' },
+      { label: 'Pending Updates', value: needsUpdate, trend: 'Firmware v2.4.1 available', tone: '#f59e0b' }
+    ];
+  }
 
   const networkStats = [
     { label: 'Active Connections', value: '340', tone: '#10b981' },
@@ -90,28 +48,34 @@
     { label: 'Failed Messages', value: '3', tone: '#ef4444' }
   ];
 
-  const firmwareQueue = [
-    {
-      title: 'v2.4.1 Production Rollout',
-      description: '23 devices pending update',
-      status: 'In Progress',
-      completion: 65,
-      accent: '#3b82f6'
-    },
-    {
-      title: 'v2.5.0 Canary Group',
-      description: '5 devices testing new version',
-      status: 'Healthy',
-      completion: 100,
-      accent: '#10b981',
-      success: true
-    }
-  ];
+  function calculateFirmwareQueue() {
+    const needsUpdate = deviceRows.filter(d => d.firmware !== 'v2.4.1').length;
+    const upToDate = deviceRows.filter(d => d.firmware === 'v2.4.1').length;
+    
+    return [
+      {
+        title: 'v2.4.1 Production Rollout',
+        description: `${needsUpdate} devices pending update`,
+        status: needsUpdate > 0 ? 'In Progress' : 'Complete',
+        completion: deviceRows.length > 0 ? Math.round((upToDate / deviceRows.length) * 100) : 100,
+        accent: '#3b82f6'
+      },
+      {
+        title: 'All Devices Up-to-Date',
+        description: `${upToDate} devices on latest firmware`,
+        status: 'Healthy',
+        completion: 100,
+        accent: '#10b981',
+        success: true
+      }
+    ];
+  }
 
   function renderKpis() {
     const grid = document.getElementById('iotKpiGrid');
     if (!grid) return;
     grid.innerHTML = '';
+    const kpis = calculateKpis();
     kpis.forEach((kpi) => {
       const card = document.createElement('article');
       card.className = 'kpi-card';
@@ -164,6 +128,7 @@
     const list = document.getElementById('firmwareQueue');
     if (!list) return;
     list.innerHTML = '';
+    const firmwareQueue = calculateFirmwareQueue();
     firmwareQueue.forEach((item) => {
       const card = document.createElement('div');
       card.className = `update-card ${item.success ? 'success' : ''}`;
@@ -198,12 +163,33 @@
     });
   }
 
+  let currentConfigDevice = null;
+
   function initTableActions() {
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', async (event) => {
       const button = event.target.closest('button[data-action="configure"]');
       if (!button) return;
       const deviceId = button.dataset.device;
-      toast(`Opening configuration for ${deviceId}`, 'info');
+      
+      // Find the device in our local array
+      const device = deviceRows.find(d => d.deviceId === deviceId);
+      if (!device) return;
+      
+      // Store current device for configuration
+      currentConfigDevice = device;
+      
+      // Open configuration dialog
+      const configDialog = document.getElementById('configureDialog');
+      const configDeviceIdEl = document.getElementById('configDeviceId');
+      if (configDeviceIdEl) {
+        configDeviceIdEl.textContent = deviceId;
+      }
+      
+      if (configDialog?.showModal) {
+        configDialog.showModal();
+      } else {
+        toast('Configuration dialog not supported in this browser', 'error');
+      }
     });
   }
 
@@ -212,6 +198,8 @@
     const dialogForm = document.getElementById('deviceDialogForm');
     const filterDialog = document.getElementById('filterDialog');
     const filterDialogForm = document.getElementById('filterDialogForm');
+    const configureDialog = document.getElementById('configureDialog');
+    const configureDialogForm = document.getElementById('configureDialogForm');
 
     document.querySelectorAll('[data-action]').forEach((button) => {
       button.addEventListener('click', () => {
@@ -247,12 +235,29 @@
     const commandCenter = document.getElementById('openCommandCenter');
     if (commandCenter) {
       commandCenter.addEventListener('click', () => {
-        toast('Launching real-time command center...', 'info');
+        toast('Command Center: Real-time device monitoring dashboard', 'info');
+        
+        // Show a summary of current system status
+        const online = deviceRows.filter(d => d.status === 'success').length;
+        const offline = deviceRows.filter(d => d.status === 'danger').length;
+        const warning = deviceRows.filter(d => d.status === 'warning').length;
+        
+        setTimeout(() => {
+          toast(`System Status: ${online} online, ${warning} warning, ${offline} offline`, 'success');
+        }, 1000);
+        
+        console.log('=== COMMAND CENTER ===');
+        console.log(`Total Devices: ${deviceRows.length}`);
+        console.log(`Online: ${online}`);
+        console.log(`Warning: ${warning}`);
+        console.log(`Offline: ${offline}`);
+        console.log('Device List:', deviceRows);
+        console.log('=====================');
       });
     }
 
     if (dialogForm) {
-      dialogForm.addEventListener('submit', (event) => {
+      dialogForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(dialogForm);
         const newDevice = {
@@ -261,14 +266,29 @@
           location: formData.get('location'),
           type: formData.get('type'),
           status: formData.get('status'),
-          heartbeat: 'Just registered',
           firmware: 'v2.4.1'
         };
-        deviceRows.unshift(newDevice);
-        renderDeviceTable();
-        toast(`${newDevice.deviceId} registered successfully.`, 'success');
-        dialogForm.reset();
-        dialog.close();
+        
+        try {
+          const response = await fetch(`${API_BASE}/api/v1/devices`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newDevice)
+          });
+          
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to register device');
+          }
+          
+          await loadDevices();
+          toast(`${newDevice.deviceId} registered successfully.`, 'success');
+          dialogForm.reset();
+          dialog.close();
+        } catch (err) {
+          console.error('Device registration error:', err);
+          toast(err.message || 'Failed to register device', 'error');
+        }
       });
 
       dialogForm.addEventListener('reset', () => {
@@ -298,6 +318,49 @@
             renderDeviceTable();
             toast('Filter cleared.', 'info');
             filterDialog.close();
+        });
+    }
+
+    // Configure device dialog
+    if (configureDialogForm) {
+        configureDialogForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            if (!currentConfigDevice) {
+                toast('No device selected', 'error');
+                return;
+            }
+            
+            const formData = new FormData(configureDialogForm);
+            const newConfig = {
+                sensitivity: parseFloat(formData.get('sensitivity')),
+                threshold: parseInt(formData.get('threshold')),
+                mode: formData.get('mode'),
+                sampleRate: parseInt(formData.get('sampleRate'))
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/devices/${currentConfigDevice.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ config: newConfig })
+                });
+                
+                if (!response.ok) throw new Error('Failed to update configuration');
+                
+                await loadDevices(); // Reload devices to show updated config
+                toast(`Configuration updated for ${currentConfigDevice.deviceId}`, 'success');
+                console.log(`[config] Updated ${currentConfigDevice.deviceId}:`, newConfig);
+                configureDialog.close();
+                configureDialogForm.reset();
+            } catch (err) {
+                console.error('Configuration error:', err);
+                toast('Failed to update configuration', 'error');
+            }
+        });
+
+        configureDialogForm.addEventListener('reset', () => {
+            configureDialog.close();
         });
     }
   }
@@ -359,9 +422,8 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    renderKpis();
-    renderDeviceTable();
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadDevices();
     renderNetworkStats();
     renderFirmwareQueue();
     initNav();

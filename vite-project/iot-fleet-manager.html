@@ -64,12 +64,20 @@
                         <div class="panel-title">📡 MQTT Network Health (AWS IoT Core)</div>
                     </div>
                     <div class="stats-grid" id="networkStats"></div>
-                    <div class="chart-placeholder">📊 Real-time MQTT Throughput Chart<br><span>(CloudWatch Metrics Integration)</span></div>
+                    <div class="chart-placeholder" style="padding: 2rem; text-align: center; background: #f8f9fa; border-radius: 8px; margin-top: 1rem;">
+                        📊 Real-time MQTT Throughput Chart<br>
+                        <span style="font-size: 0.9em; color: #666;">(Available after AWS IoT Core deployment)</span><br>
+                        <small style="color: #999;">This chart will show live MQTT message throughput from CloudWatch Metrics once deployed to AWS</small>
+                    </div>
                 </article>
                 <article class="panel">
                     <div class="panel-header">
-                        <div class="panel-title">🔄 Firmware OTA Update Queue</div>
+                        <div class="panel-title">🔄 Firmware OTA Update Status</div>
                     </div>
+                    <p style="font-size: 0.9em; color: #666; margin: 0.5rem 0;">
+                        Over-The-Air firmware updates allow remote device upgrades without physical access. 
+                        This feature uses AWS IoT Jobs for staged rollouts.
+                    </p>
                     <div class="update-list" id="firmwareQueue"></div>
                     <button class="btn btn-primary" data-action="schedule-ota">📅 Schedule OTA Update Batch</button>
                 </article>
@@ -197,6 +205,39 @@
             <menu>
                 <button type="reset" class="btn btn-secondary">Clear</button>
                 <button type="submit" class="btn btn-primary">Apply Filter</button>
+            </menu>
+        </form>
+    </dialog>
+
+    <dialog class="modal" id="configureDialog">
+        <form class="modal-content" id="configureDialogForm">
+            <h2>Configure Device</h2>
+            <div id="configDeviceInfo" style="margin-bottom: 1rem; padding: 0.5rem; background: #f0f0f0; border-radius: 4px;">
+                <strong>Device:</strong> <span id="configDeviceId"></span>
+            </div>
+            <label>Sensitivity
+                <input type="number" name="sensitivity" step="0.01" min="0" max="1" value="0.85" required>
+                <small>Audio detection sensitivity (0.0 - 1.0)</small>
+            </label>
+            <label>Threshold (dB)
+                <input type="number" name="threshold" min="-60" max="0" value="-35" required>
+                <small>Audio threshold in decibels (-60 to 0)</small>
+            </label>
+            <label>Mode
+                <select name="mode" required>
+                    <option value="active">Active</option>
+                    <option value="passive">Passive</option>
+                    <option value="high-alert">High Alert</option>
+                    <option value="sleep">Sleep Mode</option>
+                </select>
+            </label>
+            <label>Sample Rate (Hz)
+                <input type="number" name="sampleRate" value="16000" required>
+                <small>Audio sample rate (8000, 16000, 44100)</small>
+            </label>
+            <menu>
+                <button type="reset" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update Configuration</button>
             </menu>
         </form>
     </dialog>
