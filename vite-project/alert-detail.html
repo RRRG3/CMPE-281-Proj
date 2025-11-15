@@ -6,6 +6,8 @@
     <title>Alert Detail - Smart Home Senior Care</title>
     <link rel="stylesheet" href="/src/assets/css/base.css">
     <link rel="stylesheet" href="/src/assets/css/alert-detail.css">
+    <link rel="stylesheet" href="/src/assets/css/alert-detail-enhanced.css">
+    <link rel="stylesheet" href="/src/assets/css/owner-dashboard.css">
 </head>
 <body class="alert-detail-body">
     <header class="header">
@@ -82,7 +84,8 @@
                 
                 <div class="actions" style="margin:12px 0;">
                     <button id="btn-ack" class="btn btn-primary">Acknowledge</button>
-                    <button id="btn-resolve" class="btn btn-primary">Resolve</button>
+                    <button id="btn-escalate" class="btn btn-primary" style="background: #f59e0b;">Escalate</button>
+                    <button id="btn-resolve" class="btn btn-primary" style="background: #10b981;">Resolve</button>
                     <a href="owner-dashboard.html" style="margin-left:8px;">← Back to list</a>
                 </div>
                 
@@ -95,7 +98,6 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script type="module" src="/src/assets/js/toast.js"></script>
-    <script type="module" src="/src/assets/js/alert-detail.js"></script>
-    <script type="module" src="/src/assets/js/alert-detail-live.js"></script>
+    <script type="module" src="/src/assets/js/alert-detail-enhanced.js"></script>
 </body>
 </html>

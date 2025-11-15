@@ -362,6 +362,117 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Tenant Management Modal -->
+    <dialog class="modal" id="tenantModal">
+        <form method="dialog" class="modal-content" id="tenantForm">
+            <h2 id="tenantModalTitle">Add New Tenant</h2>
+            <input type="hidden" id="tenantId" name="id">
+            <label>
+                Tenant Name *
+                <input type="text" name="name" id="tenantName" required placeholder="Johnson Residence">
+            </label>
+            <label>
+                Contact Email *
+                <input type="email" name="contact_email" id="tenantEmail" required placeholder="owner@example.com">
+            </label>
+            <label>
+                Contact Phone
+                <input type="tel" name="contact_phone" id="tenantPhone" placeholder="+1-555-0100">
+            </label>
+            <label>
+                Status
+                <select name="status" id="tenantStatus" required>
+                    <option value="active">Active</option>
+                    <option value="trial">Trial</option>
+                    <option value="suspended">Suspended</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </label>
+            <menu>
+                <button type="reset" class="btn btn-secondary" value="cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Tenant</button>
+            </menu>
+        </form>
+    </dialog>
+
+    <!-- ML Model Deployment Modal -->
+    <dialog class="modal" id="modelModal">
+        <form method="dialog" class="modal-content" id="modelForm">
+            <h2>Deploy New ML Model</h2>
+            <label>
+                Model Name *
+                <input type="text" name="model_name" required placeholder="Audio Classifier v4">
+            </label>
+            <label>
+                Version *
+                <input type="text" name="version" required placeholder="4.0.0">
+            </label>
+            <label>
+                Model Type *
+                <select name="model_type" required>
+                    <option value="audio_classification">Audio Classification</option>
+                    <option value="fall_detection">Fall Detection</option>
+                    <option value="anomaly_detection">Anomaly Detection</option>
+                    <option value="behavior_analysis">Behavior Analysis</option>
+                </select>
+            </label>
+            <label>
+                Deployment Strategy
+                <select name="strategy">
+                    <option value="canary">Canary (10% traffic)</option>
+                    <option value="blue_green">Blue/Green</option>
+                    <option value="rolling">Rolling Update</option>
+                    <option value="immediate">Immediate (Production)</option>
+                </select>
+            </label>
+            <label>
+                Model File URL *
+                <input type="url" name="model_url" required placeholder="s3://models/audio-classifier-v4.pkl">
+            </label>
+            <menu>
+                <button type="reset" class="btn btn-secondary" value="cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Deploy Model</button>
+            </menu>
+        </form>
+    </dialog>
+
+    <!-- Model Details Modal -->
+    <dialog class="modal" id="modelDetailsModal">
+        <div class="modal-content">
+            <h2>Model Details</h2>
+            <div id="modelDetailsContent" style="padding: 1rem 0;">
+                <p>Loading...</p>
+            </div>
+            <menu>
+                <button class="btn btn-primary" onclick="document.getElementById('modelDetailsModal').close()">Close</button>
+            </menu>
+        </div>
+    </dialog>
+
+    <!-- System Alert Confirmation Modal -->
+    <dialog class="modal" id="systemAlertModal">
+        <form method="dialog" class="modal-content" id="systemAlertForm">
+            <h2>⚠️ Trigger System-Wide Alert</h2>
+            <p style="color: #666; margin: 1rem 0;">This will send an alert to all administrators and tenants. Use only for critical system issues.</p>
+            <label>
+                Alert Message *
+                <textarea name="message" required placeholder="Describe the system issue..." rows="4"></textarea>
+            </label>
+            <label>
+                Severity
+                <select name="severity">
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                </select>
+            </label>
+            <menu>
+                <button type="reset" class="btn btn-secondary" value="cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="background: #ef4444;">Send Alert</button>
+            </menu>
+        </form>
+    </dialog>
+
     <script type="module" src="/src/assets/js/toast.js"></script>
     <script type="module" src="/src/assets/js/admin-dashboard.js"></script>
 </body>

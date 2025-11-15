@@ -1,4 +1,11 @@
-import { post, get } from './api.js';
+import { post, get, detectBackend } from './api.js';
+
+// Get API_BASE dynamically
+async function getAPIBase() {
+  await detectBackend();
+  const { API_BASE } = await import('./api.js');
+  return API_BASE;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   const kpiGrid = document.getElementById('kpiGrid');
@@ -161,24 +168,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         const action = button.dataset.action;
         switch (action) {
           case 'emergency':
-            toast('🚨 System-wide alert triggered! All administrators notified.', 'warning');
-            console.log('[ADMIN] System-wide alert triggered');
+            // Open system alert modal
+            const modal = document.getElementById('systemAlertModal');
+            modal.showModal();
             break;
+            
           case 'acknowledge-all':
-            toast('✓ All caches cleared successfully.', 'success');
-            console.log('[ADMIN] Cache cleared');
+            // Clear cache
+            toast('🔄 Clearing system caches...', 'info');
+            try {
+              const response = await post('/api/v1/admin/clear-cache', {});
+              toast('✓ All caches cleared successfully!', 'success');
+              console.log('[ADMIN] Cache cleared:', response);
+            } catch (err) {
+              toast('Failed to clear cache', 'error');
+              console.error(err);
+            }
             break;
+            
           case 'generate-report':
+            // Generate health report
             toast('📊 Generating system health report...', 'info');
-            setTimeout(() => {
-              toast('Health report generated successfully!', 'success');
-              console.log('[ADMIN] Health report generated');
-            }, 2000);
+            try {
+              const report = await get('/api/v1/admin/health-report');
+              console.log('[ADMIN] Health report:', report);
+              
+              // Display report summary
+              setTimeout(() => {
+                toast(`✓ Report generated! System: ${report.system_status} | Uptime: ${report.uptime_percentage}% | Open Alerts: ${report.alerts.open}`, 'success');
+                
+                // Download report as JSON
+                const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `health-report-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }, 1000);
+            } catch (err) {
+              toast('Failed to generate report', 'error');
+              console.error(err);
+            }
             break;
+            
           case 'device-settings':
             toast('🔧 Opening system settings...', 'info');
             console.log('[ADMIN] System settings opened');
+            setTimeout(() => {
+              toast('System settings panel would open here', 'success');
+            }, 500);
             break;
+            
           default:
             toast('Action executed.', 'success');
         }
@@ -232,87 +273,282 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Load tenants from backend
+  async function loadTenants() {
+    try {
+      const response = await get('/api/v1/tenants');
+      const tenants = response.items || [];
+      
+      const tbody = document.querySelector('[data-section="tenants"] table tbody');
+      if (!tbody) return;
+      
+      tbody.innerHTML = '';
+      tenants.forEach(tenant => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${tenant.tenant_id}</td>
+          <td>${tenant.name}</td>
+          <td>${tenant.device_count} devices</td>
+          <td><span class="badge ${tenant.status === 'active' ? 'success' : 'warning'}">${tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}</span></td>
+          <td>${tenant.alert_count} alerts</td>
+          <td><button class="btn btn-secondary" data-tenant-id="${tenant.id}">Manage</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      console.log(`[ADMIN] Loaded ${tenants.length} tenants`);
+    } catch (err) {
+      console.error('[ADMIN] Failed to load tenants:', err);
+      toast('Failed to load tenants', 'error');
+    }
+  }
+
   function initTabButtons() {
     console.log('[ADMIN] Initializing tab buttons...');
     
-    // Tenant Management buttons - use event delegation
-    const tenantsSection = document.querySelector('[data-section="tenants"]');
-    if (tenantsSection) {
-      // Add New Tenant button
-      const addTenantBtn = tenantsSection.querySelector('.panel-header .btn-primary');
-      if (addTenantBtn) {
-        addTenantBtn.addEventListener('click', () => {
-          toast('🏢 Opening tenant registration form...', 'info');
-          console.log('[ADMIN] Add new tenant clicked');
-        });
-        console.log('[ADMIN] Add tenant button initialized');
-      } else {
-        console.warn('[ADMIN] Add tenant button not found');
+    // Load tenants when page loads
+    loadTenants();
+    
+    // Use event delegation on the entire document for better reliability
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      
+      // Check if clicked element is a button
+      if (!target.classList.contains('btn') && !target.classList.contains('btn-primary') && !target.classList.contains('btn-secondary')) {
+        return;
       }
-
-      // Manage buttons in table
-      const manageButtons = tenantsSection.querySelectorAll('table .btn-secondary');
-      console.log('[ADMIN] Found', manageButtons.length, 'manage buttons');
-      manageButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const row = e.target.closest('tr');
-          const tenantId = row?.querySelector('td:first-child')?.textContent;
-          toast(`📊 Opening management panel for ${tenantId || 'tenant'}...`, 'info');
-          console.log('[ADMIN] Manage tenant:', tenantId);
+      
+      // Get the section the button is in
+      const section = target.closest('.section');
+      if (!section) return;
+      
+      const sectionType = section.dataset.section;
+      
+      // Tenant Management - Add New Tenant
+      if (sectionType === 'tenants' && target.classList.contains('btn-primary')) {
+        e.preventDefault();
+        const modal = document.getElementById('tenantModal');
+        const form = document.getElementById('tenantForm');
+        document.getElementById('tenantModalTitle').textContent = 'Add New Tenant';
+        form.reset();
+        document.getElementById('tenantId').value = '';
+        modal.showModal();
+        return;
+      }
+      
+      // Tenant Management - Manage buttons
+      if (sectionType === 'tenants' && target.classList.contains('btn-secondary')) {
+        e.preventDefault();
+        const tenantId = target.dataset.tenantId;
+        if (!tenantId) return;
+        
+        // Load tenant data and open edit modal
+        get(`/api/v1/tenants/${tenantId}`).then(tenant => {
+          const modal = document.getElementById('tenantModal');
+          const form = document.getElementById('tenantForm');
+          document.getElementById('tenantModalTitle').textContent = 'Manage Tenant';
+          document.getElementById('tenantId').value = tenant.id;
+          document.getElementById('tenantName').value = tenant.name;
+          document.getElementById('tenantEmail').value = tenant.contact_email;
+          document.getElementById('tenantPhone').value = tenant.contact_phone || '';
+          document.getElementById('tenantStatus').value = tenant.status;
+          modal.showModal();
+        }).catch(err => {
+          toast('Failed to load tenant details', 'error');
+          console.error(err);
         });
-      });
-    } else {
-      console.warn('[ADMIN] Tenants section not found');
-    }
-
-    // ML Models buttons
-    document.querySelectorAll('[data-section="ml-models"] .btn-primary').forEach(btn => {
-      btn.addEventListener('click', () => {
-        toast('Opening ML model deployment wizard...', 'info');
-        console.log('[ADMIN] Deploy new model clicked');
-      });
-    });
-
-    document.querySelectorAll('[data-section="ml-models"] .btn-secondary').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const row = e.target.closest('tr');
+        return;
+      }
+      
+      // ML Models - Deploy New Model
+      if (sectionType === 'ml-models' && target.classList.contains('btn-primary')) {
+        e.preventDefault();
+        const modal = document.getElementById('modelModal');
+        modal.showModal();
+        return;
+      }
+      
+      // ML Models - Details buttons
+      if (sectionType === 'ml-models' && target.classList.contains('btn-secondary')) {
+        e.preventDefault();
+        const row = target.closest('tr');
         const modelName = row?.querySelector('td:first-child')?.textContent;
-        toast(`Opening details for ${modelName || 'model'}...`, 'info');
-        console.log('[ADMIN] Model details:', modelName);
-      });
-    });
-
-    // System Health buttons
-    document.querySelectorAll('[data-section="system-health"] .btn-secondary').forEach(btn => {
-      if (btn.textContent.includes('Refresh')) {
-        btn.addEventListener('click', () => {
-          toast('Refreshing system health metrics...', 'info');
-          setTimeout(() => {
-            toast('✓ Metrics refreshed from CloudWatch', 'success');
-          }, 1500);
-          console.log('[ADMIN] Refresh metrics clicked');
-        });
+        const version = row?.querySelector('td:nth-child(2)')?.textContent;
+        const status = row?.querySelector('td:nth-child(3)')?.textContent;
+        const deployed = row?.querySelector('td:nth-child(4)')?.textContent;
+        const accuracy = row?.querySelector('td:nth-child(5)')?.textContent;
+        
+        const modal = document.getElementById('modelDetailsModal');
+        const content = document.getElementById('modelDetailsContent');
+        content.innerHTML = `
+          <div style="display: grid; gap: 1rem;">
+            <div><strong>Model Name:</strong> ${modelName}</div>
+            <div><strong>Version:</strong> ${version}</div>
+            <div><strong>Status:</strong> <span class="badge ${status.includes('Production') ? 'success' : 'warning'}">${status}</span></div>
+            <div><strong>Deployed:</strong> ${deployed}</div>
+            <div><strong>Accuracy:</strong> ${accuracy}</div>
+            <div><strong>Endpoint:</strong> <code>https://api.smarthome.ai/ml/${modelName.toLowerCase().replace(/\s+/g, '-')}</code></div>
+            <div><strong>Training Data:</strong> 50,000 samples</div>
+            <div><strong>Last Updated:</strong> ${new Date().toLocaleDateString()}</div>
+          </div>
+        `;
+        modal.showModal();
+        return;
+      }
+      
+      // System Health - Refresh button
+      if (sectionType === 'system-health' && target.textContent.includes('Refresh')) {
+        e.preventDefault();
+        toast('🔄 Refreshing system health metrics...', 'info');
+        console.log('[ADMIN] Refresh metrics clicked');
+        setTimeout(() => {
+          toast('✓ Metrics refreshed from CloudWatch', 'success');
+        }, 1500);
+        return;
+      }
+      
+      // Audit Logs - Filter button
+      if (sectionType === 'logs' && target.textContent.includes('Filter')) {
+        e.preventDefault();
+        toast('🔍 Opening audit log filters...', 'info');
+        console.log('[ADMIN] Filter logs clicked');
+        setTimeout(() => {
+          toast('Filter panel would open here', 'success');
+        }, 1000);
+        return;
+      }
+      
+      // Audit Logs - Export button
+      if (sectionType === 'logs' && target.textContent.includes('Export')) {
+        e.preventDefault();
+        toast('📥 Exporting audit logs to CSV...', 'info');
+        console.log('[ADMIN] Export logs clicked');
+        
+        // Download CSV from backend
+        (async () => {
+          try {
+            const apiBase = await getAPIBase();
+            const response = await fetch(`${apiBase}/api/v1/admin/audit-logs/export`);
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast('✓ Audit logs exported successfully', 'success');
+          } catch (err) {
+            toast('Failed to export logs', 'error');
+            console.error(err);
+          }
+        })();
+        return;
       }
     });
-
-    // Audit Logs buttons
-    const auditFilterBtn = document.querySelector('[data-section="logs"] .btn-secondary:first-of-type');
-    const auditExportBtn = document.querySelector('[data-section="logs"] .btn-secondary:last-of-type');
-
-    if (auditFilterBtn && auditFilterBtn.textContent.includes('Filter')) {
-      auditFilterBtn.addEventListener('click', () => {
-        toast('Opening audit log filters...', 'info');
-        console.log('[ADMIN] Filter logs clicked');
+    
+    console.log('[ADMIN] Event delegation initialized for all tab buttons');
+  }
+  
+  // Form submission handlers
+  function initForms() {
+    // Tenant form
+    const tenantForm = document.getElementById('tenantForm');
+    if (tenantForm) {
+      tenantForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(tenantForm);
+        const data = {
+          name: formData.get('name'),
+          contact_email: formData.get('contact_email'),
+          contact_phone: formData.get('contact_phone'),
+          status: formData.get('status')
+        };
+        
+        const tenantId = document.getElementById('tenantId').value;
+        
+        try {
+          if (tenantId) {
+            // Update existing tenant
+            await fetch(`${window.API_BASE || 'http://18.226.181.94:3000'}/api/v1/tenants/${tenantId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+            toast('✓ Tenant updated successfully!', 'success');
+          } else {
+            // Create new tenant
+            await post('/api/v1/tenants', data);
+            toast('✓ Tenant created successfully!', 'success');
+          }
+          
+          document.getElementById('tenantModal').close();
+          loadTenants(); // Reload tenant list
+        } catch (err) {
+          toast('Failed to save tenant', 'error');
+          console.error(err);
+        }
+      });
+      
+      tenantForm.addEventListener('reset', () => {
+        document.getElementById('tenantModal').close();
       });
     }
-
-    if (auditExportBtn && auditExportBtn.textContent.includes('Export')) {
-      auditExportBtn.addEventListener('click', () => {
-        toast('Exporting audit logs to CSV...', 'info');
+    
+    // Model deployment form
+    const modelForm = document.getElementById('modelForm');
+    if (modelForm) {
+      modelForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(modelForm);
+        const data = {
+          model_name: formData.get('model_name'),
+          version: formData.get('version'),
+          model_type: formData.get('model_type'),
+          strategy: formData.get('strategy'),
+          model_url: formData.get('model_url')
+        };
+        
+        toast('🚀 Deploying ML model...', 'info');
+        console.log('[ADMIN] Deploying model:', data);
+        
+        // Simulate deployment
         setTimeout(() => {
-          toast('✓ Audit logs exported successfully', 'success');
-          console.log('[ADMIN] Logs exported');
-        }, 1000);
+          toast(`✓ ${data.model_name} v${data.version} deployed successfully!`, 'success');
+          document.getElementById('modelModal').close();
+          modelForm.reset();
+        }, 2000);
+      });
+      
+      modelForm.addEventListener('reset', () => {
+        document.getElementById('modelModal').close();
+      });
+    }
+    
+    // System alert form
+    const systemAlertForm = document.getElementById('systemAlertForm');
+    if (systemAlertForm) {
+      systemAlertForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(systemAlertForm);
+        const data = {
+          message: formData.get('message'),
+          severity: formData.get('severity')
+        };
+        
+        try {
+          const response = await post('/api/v1/admin/system-alert', data);
+          toast('🚨 System-wide alert sent to all administrators!', 'warning');
+          console.log('[ADMIN] System alert sent:', response);
+          document.getElementById('systemAlertModal').close();
+          systemAlertForm.reset();
+        } catch (err) {
+          toast('Failed to send system alert', 'error');
+          console.error(err);
+        }
+      });
+      
+      systemAlertForm.addEventListener('reset', () => {
+        document.getElementById('systemAlertModal').close();
       });
     }
   }
@@ -325,6 +561,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initQuickActions();
   initHeaderActions();
   initTabButtons();
+  initForms();
 
   console.log('[ADMIN DASHBOARD] Loaded with', alerts.length, 'alerts');
 });

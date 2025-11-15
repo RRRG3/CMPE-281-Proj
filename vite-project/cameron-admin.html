@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cameron's Admin - Database & API Integration</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .auth-section {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .auth-section.hidden {
+      display: none;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .card h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 20px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #5568d3;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8f9fa;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    tr:hover {
+      background: #f8f9fa;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .badge-active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .metric-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .alert {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .alert-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .user-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .user-info strong {
+      color: #667eea;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      margin-left: 10px;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🗄️ Cameron's Component: Database & API Integration</h1>
+      <p>PostgreSQL + MongoDB | JWT Authentication | Device & House Management | Metrics APIs</p>
+    </div>
+
+    <!-- Login Section -->
+    <div id="auth-section" class="auth-section">
+      <h2>Login</h2>
+      <div id="auth-message"></div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" value="owner@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" value="admin123">
+      </div>
+      <button onclick="login()">Login</button>
+    </div>
+
+    <!-- Main Content (hidden until logged in) -->
+    <div id="main-content" class="main-content" style="display: none;">
+      <!-- User Info -->
+      <div class="card full-width">
+        <div class="user-info">
+          <strong>Logged in as:</strong> <span id="user-name"></span> (<span id="user-email"></span>) - Role: <span id="user-role"></span>
+          <button class="btn-secondary" onclick="logout()">Logout</button>
+        </div>
+      </div>
+
+      <!-- Houses -->
+      <div class="card">
+        <h2>🏠 Houses</h2>
+        <button onclick="loadHouses()">Refresh</button>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Address</th>
+                <th>Owner</th>
+                <th>Timezone</th>
+              </tr>
+            </thead>
+            <tbody id="houses-tbody">
+              <tr><td colspan="3">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Devices -->
+      <div class="card">
+        <h2>📱 Devices</h2>
+        <button onclick="loadDevices()">Refresh</button>
+        <button onclick="showDeviceForm()">Register Device</button>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>House</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="devices-tbody">
+              <tr><td colspan="5">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Device Registration Form -->
+      <div id="device-form" class="card" style="display: none;">
+        <h2>Register New Device</h2>
+        <div id="device-form-message"></div>
+        <div class="form-group">
+          <label>House</label>
+          <select id="device-house-id"></select>
+        </div>
+        <div class="form-group">
+          <label>Device Type</label>
+          <select id="device-type">
+            <option value="microphone">Microphone</option>
+            <option value="camera">Camera</option>
+            <option value="motion_sensor">Motion Sensor</option>
+            <option value="door_sensor">Door Sensor</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Device Name</label>
+          <input type="text" id="device-name" placeholder="e.g., Living Room Mic">
+        </div>
+        <button onclick="registerDevice()">Register</button>
+        <button class="btn-secondary" onclick="hideDeviceForm()">Cancel</button>
+      </div>
+
+      <!-- Device Metrics -->
+      <div id="device-metrics" class="card" style="display: none;">
+        <h2>📊 Device Metrics</h2>
+        <div id="metrics-device-name"></div>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Uptime</div>
+            <div class="metric-value" id="metric-uptime">-</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Alerts Generated</div>
+            <div class="metric-value" id="metric-alerts">-</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg SNR</div>
+            <div class="metric-value" id="metric-snr">-</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Last Seen</div>
+            <div class="metric-value" id="metric-lastseen" style="font-size: 14px;">-</div>
+          </div>
+        </div>
+        <button class="btn-secondary" onclick="hideDeviceMetrics()" style="margin-top: 20px;">Close</button>
+      </div>
+
+      <!-- Alerts by Day Chart -->
+      <div class="card full-width">
+        <h2>📈 Alerts by Day (Last 7 Days)</h2>
+        <button onclick="loadAlertsByDay()">Refresh</button>
+        <div id="alerts-chart" style="margin-top: 20px;">
+          <div class="alert alert-info">No alert data available yet. Alerts will appear here once generated.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const API_BASE = 'http://localhost:3000';
+    let accessToken = null;
+    let currentUser = null;
+    let houses = [];
+
+    window.login = async function() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          showAuthMessage(data.error || 'Login failed', 'error');
+          return;
+        }
+
+        accessToken = data.access_token;
+        currentUser = data.user;
+
+        document.getElementById('auth-section').style.display = 'none';
+        document.getElementById('main-content').style.display = 'grid';
+
+        document.getElementById('user-name').textContent = currentUser.name;
+        document.getElementById('user-email').textContent = currentUser.email;
+        document.getElementById('user-role').textContent = currentUser.role;
+
+        loadHouses();
+        loadDevices();
+        loadAlertsByDay();
+      } catch (error) {
+        showAuthMessage('Connection error: ' + error.message, 'error');
+      }
+    };
+
+    window.logout = function() {
+      accessToken = null;
+      currentUser = null;
+      document.getElementById('auth-section').style.display = 'block';
+      document.getElementById('main-content').style.display = 'none';
+    };
+
+    window.loadHouses = async function() {
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/houses`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+
+        const data = await response.json();
+        houses = data.items;
+
+        const tbody = document.getElementById('houses-tbody');
+        if (data.items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3">No houses found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.items.map(house => `
+          <tr>
+            <td>${house.address}</td>
+            <td>${house.owner_name}</td>
+            <td>${house.timezone}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading houses:', error);
+      }
+    };
+
+    window.loadDevices = async function() {
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/devices`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+
+        const data = await response.json();
+
+        const tbody = document.getElementById('devices-tbody');
+        if (data.items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5">No devices found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.items.map(device => `
+          <tr>
+            <td>${device.name}</td>
+            <td>${device.device_type}</td>
+            <td><span class="badge badge-${device.status}">${device.status}</span></td>
+            <td>${device.house_address}</td>
+            <td>
+              <button onclick="viewDeviceMetrics('${device.device_id}', '${device.name}')">View Metrics</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading devices:', error);
+      }
+    };
+
+    window.showDeviceForm = function() {
+      const select = document.getElementById('device-house-id');
+      select.innerHTML = houses.map(h => 
+        `<option value="${h.house_id}">${h.address}</option>`
+      ).join('');
+
+      document.getElementById('device-form').style.display = 'block';
+    };
+
+    window.hideDeviceForm = function() {
+      document.getElementById('device-form').style.display = 'none';
+      document.getElementById('device-form-message').innerHTML = '';
+    };
+
+    window.registerDevice = async function() {
+      const house_id = document.getElementById('device-house-id').value;
+      const device_type = document.getElementById('device-type').value;
+      const name = document.getElementById('device-name').value;
+
+      if (!name) {
+        showDeviceFormMessage('Please enter a device name', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/devices`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ house_id, device_type, name })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          showDeviceFormMessage(data.error || 'Registration failed', 'error');
+          return;
+        }
+
+        showDeviceFormMessage('Device registered successfully!', 'success');
+        setTimeout(() => {
+          hideDeviceForm();
+          loadDevices();
+        }, 1500);
+      } catch (error) {
+        showDeviceFormMessage('Connection error: ' + error.message, 'error');
+      }
+    };
+
+    window.viewDeviceMetrics = async function(deviceId, deviceName) {
+      document.getElementById('metrics-device-name').innerHTML = 
+        `<strong>Device:</strong> ${deviceName}`;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/metrics/device/${deviceId}`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+
+        const data = await response.json();
+
+        document.getElementById('metric-uptime').textContent = `${data.uptimePct}%`;
+        document.getElementById('metric-alerts').textContent = data.alertsGenerated;
+        document.getElementById('metric-snr').textContent = data.avgSnr ? data.avgSnr.toFixed(2) : 'N/A';
+        document.getElementById('metric-lastseen').textContent = data.lastSeen 
+          ? new Date(data.lastSeen).toLocaleString() 
+          : 'Never';
+
+        document.getElementById('device-metrics').style.display = 'block';
+      } catch (error) {
+        console.error('Error loading device metrics:', error);
+      }
+    };
+
+    window.hideDeviceMetrics = function() {
+      document.getElementById('device-metrics').style.display = 'none';
+    };
+
+    window.loadAlertsByDay = async function() {
+      try {
+        const endDate = new Date().toISOString().split('T')[0];
+        const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        const response = await fetch(
+          `${API_BASE}/api/v1/metrics/alerts-by-day?start_date=${startDate}&end_date=${endDate}`,
+          { headers: { 'Authorization': `Bearer ${accessToken}` } }
+        );
+
+        const data = await response.json();
+
+        const chartDiv = document.getElementById('alerts-chart');
+        if (data.items.length === 0) {
+          chartDiv.innerHTML = '<div class="alert alert-info">No alert data available for the last 7 days.</div>';
+          return;
+        }
+
+        const chartHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Low</th>
+                <th>Medium</th>
+                <th>High</th>
+                <th>Critical</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.items.map(day => `
+                <tr>
+                  <td>${new Date(day.date).toLocaleDateString()}</td>
+                  <td><strong>${day.total}</strong></td>
+                  <td>${day.low}</td>
+                  <td>${day.medium}</td>
+                  <td>${day.high}</td>
+                  <td>${day.critical}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+
+        chartDiv.innerHTML = chartHTML;
+      } catch (error) {
+        console.error('Error loading alerts by day:', error);
+      }
+    };
+
+    function showAuthMessage(message, type) {
+      const div = document.getElementById('auth-message');
+      div.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    }
+
+    function showDeviceFormMessage(message, type) {
+      const div = document.getElementById('device-form-message');
+      div.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    }
+  </script>
+</body>
+</html>

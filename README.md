@@ -1,167 +1,250 @@
-# CMPE-281-Proj
-# Smart Home Care Cloud – Interactive Prototypes
+# Alert Monitoring System - Backend Server
 
-This repository contains high-fidelity, front-end prototypes for the **Smart Home Senior Care Cloud** platform. The goal is to showcase how different user personas (home owners, IoT operations, and cloud service staff) would interact with an intelligent monitoring solution that leverages audio/video analytics, machine learning alerts, and enterprise-grade security.
+This is the backend API server for the Alert Monitoring System, implementing Cameron's Database & API Integration component.
 
-## 🚀 Project Highlights
+## Features
 
-- **Role-based entry points** through the login experience with contextual feature callouts.
-- **Owner dashboard** featuring live KPIs, alert feeds, device management, quick actions, and statistics tailored to a single residence.
-- **Alert detail workspace** that visualizes incident timelines, notification history, and recovery actions, including simulated media playback.
-- **IoT fleet manager** for operations teams to monitor device health, rollout firmware updates, and inspect MQTT network metrics across many homes.
-- **Vite-powered development** with modern build tooling for optimized production builds.
+- **PostgreSQL** for relational data (users, houses, devices, alerts)
+- **MongoDB** for time-series data (telemetry, ML inference)
+- **JWT Authentication** with access and refresh tokens
+- **Role-Based Access Control** (OWNER, ADMIN, STAFF, CAREGIVER)
+- **WebSocket** for real-time updates
+- **RESTful API** with comprehensive endpoints
 
-## 🗂️ Repository Structure
+## Prerequisites
 
-```
-.
-├── assets/
-│   └── css/
-│       └── iot-fleet.css         # IoT fleet manager styling (legacy)
-├── vite-project/
-│   ├── src/
-│   │   └── assets/
-│   │       ├── css/              # All CSS stylesheets for the application
-│   │       │   ├── alert-detail.css
-│   │       │   ├── base.css
-│   │       │   ├── home.css
-│   │       │   ├── iot-fleet.css
-│   │       │   └── owner-dashboard.css
-│   │       └── js/               # JavaScript modules for interactivity
-│   │           ├── alert-detail.js
-│   │           ├── iot-fleet.js
-│   │           ├── login.js
-│   │           ├── owner-dashboard.js
-│   │           └── toast.js
-│   ├── admin-dashboard.html
-│   ├── alert-detail.html
-│   ├── home.html
-│   ├── index.html
-│   ├── iot-fleet-manager.html
-│   ├── owner-dashboard.html
-│   ├── package.json              # Node dependencies and scripts
-│   ├── package-lock.json
-│   ├── vite.config.js            # Vite configuration
-│   └── .gitignore
-└── README.md
-```
+- Node.js 18+ 
+- PostgreSQL 15+
+- MongoDB 7+
 
-## 🎨 CSS Asset Details
+## Setup Instructions
 
-### Root Level: `assets/css/`
-- **`iot-fleet.css`** - Legacy stylesheet for IoT fleet management interface
-
-### Vite Project: `vite-project/src/assets/css/`
-
-The main application stylesheets are organized by page/component:
-
-- **`base.css`** - Global styles, CSS variables, typography, and reusable utility classes shared across all pages
-- **`home.css`** - Styling for the home/landing page with role-based navigation cards
-- **`alert-detail.css`** - Styles for the detailed alert investigation view, including timeline visualizations and media playback controls
-- **`iot-fleet.css`** - Styling for the IoT fleet manager dashboard with device registry, firmware controls, and MQTT health indicators
-- **`owner-dashboard.css`** - Styles for the owner-facing monitoring dashboard including KPI cards, alert feeds, and device management modals
-
-**Purpose of CSS files:** These stylesheets define the visual presentation and layout of the application. Each file is scoped to specific pages or components, making the codebase maintainable and modular. The `base.css` file establishes design tokens and common patterns, while page-specific files handle unique layout requirements.
-
-## 💻 JavaScript Asset Details
-
-### `vite-project/src/assets/js/`
-
-The JavaScript modules provide interactivity and dynamic behavior:
-
-- **`login.js`** - Handles authentication form validation, role selection, and navigation to appropriate dashboards
-- **`owner-dashboard.js`** - Powers the owner dashboard with dynamic alert rendering, device management modals, KPI updates, and simulated live data ingestion
-- **`alert-detail.js`** - Manages alert timeline rendering, acknowledgement workflows, notification history display, and media playback controls
-- **`iot-fleet.js`** - Controls IoT fleet management features including device filtering, firmware rollout operations, and MQTT health monitoring
-- **`toast.js`** - Shared utility module for displaying temporary notification messages across all pages
-
-**Usage:** These modules are loaded by their corresponding HTML pages and implement the interactive features without requiring any backend services. All data is mocked client-side for prototyping purposes.
-
-## 🧩 Key Features by Screen
-
-| Screen | Highlights |
-| --- | --- |
-| `index.html` | Role cards with quick navigation, credential form validation, and toast notifications that guide users to the right dashboard. |
-| `owner-dashboard.html` | Dynamic alert rendering, device add/edit modals, KPI refreshing, and simulated live alert ingestion. |
-| `alert-detail.html` | Timeline of system actions, acknowledgement workflow, notification history, and waveform playback mock. |
-| `iot-fleet-manager.html` | Device registry filters, firmware rollout controls, MQTT health indicators, and configuration utilities. |
-
-## 🧭 Getting Started
-
-### Running the Vite Project
-
-The main application is built with Vite for modern development experience:
-
-1. **Navigate to the vite-project directory:**
-   ```bash
-   cd vite-project
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-   This will start Vite's development server with hot module replacement (HMR), typically on `http://localhost:5173`
-
-4. **Build for production:**
-   ```bash
-   npm run build
-   ```
-   Creates an optimized production build in the `dist/` folder
-
-5. **Preview production build:**
-   ```bash
-   npm run preview
-   ```
-   Serves the production build locally for testing
-
-### Vite-Specific Features
-
-- **Hot Module Replacement (HMR)** - Instant updates without full page reloads during development
-- **Fast build times** - Leverages native ES modules and esbuild for blazing-fast bundling
-- **Automatic asset optimization** - CSS minification, tree-shaking, and code splitting out of the box
-- **Development server** - Built-in dev server with automatic HTTPS support
-
-### Alternative: Direct Browser Usage
-
-For quick prototyping without the build step:
-
-1. Clone this repository or download the source
-2. Serve the `vite-project` directory via a local web server (e.g., VS Code Live Server, `python -m http.server`, etc.)
-3. Open the desired HTML file in your browser
+### 1. Install Dependencies
 
 ```bash
-# Example: serve on http://localhost:8000
-cd vite-project
-python -m http.server 8000
+npm install
 ```
 
-> **Tip:** When served via a local web server, navigation links between screens work seamlessly because relative URLs stay intact.
+### 2. Set Up PostgreSQL
 
-## 🛠️ Customization Guide
+Create the database:
 
-- **Data & KPIs:** Update the mock data objects inside the corresponding JavaScript files under `vite-project/src/assets/js/` to change device inventories, alert feeds, or statistics.
-- **Styling:** Modify CSS files in `vite-project/src/assets/css/` to customize colors, layouts, and component styles. Start with `base.css` for global theme changes.
-- **Pages:** Edit HTML files in the `vite-project/` root to adjust structure and content.
-- **Build configuration:** Modify `vite.config.js` to customize build settings, add plugins, or configure deployment options.
+```bash
+createdb alert_monitoring
+```
 
-## 📦 Dependencies
+Initialize the schema:
 
-The project uses minimal dependencies managed through npm. See `vite-project/package.json` for the complete list. The main dependency is Vite itself for development and build tooling.
+```bash
+psql -d alert_monitoring -f db/schema.sql
+```
 
-## 🔧 Development Workflow
+This will create all tables and insert sample data including:
+- Admin user: `admin@example.com` / `admin123`
+- Owner user: `owner@example.com` / `admin123`
+- Caregiver user: `caregiver@example.com` / `admin123`
 
-1. Make changes to HTML, CSS, or JS files
-2. Vite automatically detects changes and updates the browser (HMR)
-3. Test features in the browser
-4. Build for production when ready to deploy
-5. Preview the production build to ensure everything works as expected
+### 3. Set Up MongoDB
 
----
+Start MongoDB (if not already running):
 
-**Built with vanilla HTML, CSS, JavaScript, and powered by Vite for modern development experience.**
+```bash
+mongod --dbpath /path/to/data
+```
+
+The application will automatically create collections and indexes on first connection.
+
+### 4. Configure Environment Variables
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and update the values:
+
+```env
+PORT=3000
+NODE_ENV=development
+
+# Update with your PostgreSQL credentials
+DB_URL=postgresql://postgres:password@localhost:5432/alert_monitoring
+
+# Update with your MongoDB connection string
+MONGO_URL=mongodb://localhost:27017/alert_monitoring
+
+# Generate a secure random string for production
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-min-256-bits
+```
+
+### 5. Start the Server
+
+Development mode (with auto-reload):
+
+```bash
+npm run dev
+```
+
+Production mode:
+
+```bash
+npm start
+```
+
+The server will start on `http://localhost:3000` (or the PORT specified in .env).
+
+## API Endpoints
+
+### Authentication
+
+- `POST /api/v1/auth/login` - User login
+- `POST /api/v1/auth/refresh` - Refresh access token
+- `POST /api/v1/auth/logout` - User logout
+- `POST /api/v1/auth/register` - Register new user (admin only)
+
+### Houses
+
+- `GET /api/v1/houses` - List houses (filtered by ownership)
+
+### Devices
+
+- `GET /api/v1/devices` - List devices with filtering and pagination
+- `POST /api/v1/devices` - Register new device
+- `GET /api/v1/devices/:id` - Get device details
+- `POST /api/v1/devices/:id/metrics` - Ingest telemetry data
+
+### Metrics
+
+- `GET /api/v1/metrics/alerts-by-day` - Daily alert aggregation
+- `GET /api/v1/metrics/device/:id` - Device health metrics
+
+### ML
+
+- `POST /api/v1/ml/predict` - ML inference endpoint (mocked)
+
+### WebSocket
+
+- `ws://localhost:3000/ws` - Real-time updates
+
+## Testing the API
+
+### 1. Login
+
+```bash
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"owner@example.com","password":"admin123"}'
+```
+
+Save the `access_token` from the response.
+
+### 2. List Houses
+
+```bash
+curl http://localhost:3000/api/v1/houses \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### 3. List Devices
+
+```bash
+curl http://localhost:3000/api/v1/devices \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### 4. Register a Device
+
+```bash
+curl -X POST http://localhost:3000/api/v1/devices \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "house_id": "YOUR_HOUSE_ID",
+    "device_type": "microphone",
+    "name": "Kitchen Mic"
+  }'
+```
+
+### 5. Send Telemetry
+
+```bash
+curl -X POST http://localhost:3000/api/v1/devices/YOUR_DEVICE_ID/metrics \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metrics": {
+      "snr": 45.2,
+      "rms": 0.023,
+      "decibel": 65.5
+    }
+  }'
+```
+
+### 6. Get Device Metrics
+
+```bash
+curl http://localhost:3000/api/v1/metrics/device/YOUR_DEVICE_ID \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### 7. Get Alerts by Day
+
+```bash
+curl "http://localhost:3000/api/v1/metrics/alerts-by-day?start_date=2025-11-01&end_date=2025-11-14" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+## Database Schema
+
+### PostgreSQL Tables
+
+- `users` - User accounts with roles
+- `houses` - Properties owned by users
+- `devices` - IoT devices in houses
+- `alerts` - Alert records
+- `alert_history` - Alert action audit trail
+- `refresh_tokens` - JWT refresh tokens
+
+### MongoDB Collections
+
+- `telemetry` - Time-series sensor data
+- `ml_inference` - ML model predictions
+
+## Security
+
+- All endpoints (except auth) require JWT authentication
+- Passwords are hashed with bcrypt (10 salt rounds)
+- Access tokens expire after 1 hour
+- Refresh tokens expire after 7 days
+- Role-based access control enforced on sensitive endpoints
+
+## Development Notes
+
+- The server uses connection pooling for both PostgreSQL and MongoDB
+- WebSocket broadcasts are sent to all connected clients
+- Error responses follow a consistent format
+- All timestamps are stored in ISO 8601 format
+
+## Troubleshooting
+
+### PostgreSQL Connection Error
+
+- Verify PostgreSQL is running: `pg_isready`
+- Check connection string in `.env`
+- Ensure database exists: `psql -l | grep alert_monitoring`
+
+### MongoDB Connection Error
+
+- Verify MongoDB is running: `mongosh --eval "db.version()"`
+- Check connection string in `.env`
+- Ensure MongoDB is accessible on the specified port
+
+### JWT Errors
+
+- Ensure `JWT_SECRET` is set in `.env`
+- For production, use a secure random string (min 256 bits)
+
+## License
+
+MIT

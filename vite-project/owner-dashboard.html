@@ -13,18 +13,27 @@
             <a class="logo" href="home.html" title="Back to home">🏠</a>
             <div class="header-title">
                 <h1>Smart Home Senior Care Cloud</h1>
-                <div class="header-subtitle">Owner Dashboard - Johnson Residence</div>
+                <div class="header-subtitle">Owner Dashboard - <span id="current-tenant-name">Loading...</span></div>
             </div>
         </div>
         <div class="header-right">
+            <label style="margin-right: 1rem; display: flex; align-items: center; gap: 8px; color: white; font-size: 14px;">
+                <span>👤 Owner:</span>
+                <select id="owner-selector" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 14px; cursor: pointer;">
+                    <option value="">Loading...</option>
+                </select>
+            </label>
+            <button class="notification-icon" id="soundToggle" aria-label="Alert Sounds: ON" title="Click to mute/unmute alert notification sounds">
+                🔊
+            </button>
             <button class="notification-icon" id="notificationButton" aria-label="View notifications">
                 🔔
                 <span class="notification-badge">3</span>
             </button>
             <div class="user-info" id="userMenuToggle" role="button" tabindex="0" aria-haspopup="true">
-                <div class="avatar">JD</div>
+                <div class="avatar" id="user-avatar">--</div>
                 <div>
-                    <div class="user-name">John Doe</div>
+                    <div class="user-name" id="user-name">Loading...</div>
                     <div class="user-role">House Owner</div>
                 </div>
             </div>
@@ -84,34 +93,81 @@
             </div>
             <div class="panel">
                 <div class="panel-header">
-                    <div class="panel-title">🎥 Connected Devices Overview</div>
-                    <button class="btn btn-primary" id="addDeviceBtn">+ Add New Device</button>
+                    <div class="panel-title">🏠 House Floor Plan & Devices</div>
+                    <div class="panel-actions">
+                        <button class="btn btn-secondary" id="toggleView">📋 List View</button>
+                        <button class="btn btn-primary" id="addDeviceBtn">+ Add Device</button>
+                    </div>
                 </div>
+                
+                <!-- Floor Plan Map -->
+                <div id="floorPlanView" style="margin-bottom: 2rem;">
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 2rem; position: relative; min-height: 500px;">
+                        <svg id="floorPlanSvg" width="100%" height="500" viewBox="0 0 800 500" style="border: 2px solid #dee2e6; border-radius: 8px; background: white;">
+                            <!-- Floor plan will be drawn here -->
+                        </svg>
+                        <div id="deviceTooltip" style="position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; display: none; pointer-events: none; z-index: 1000;"></div>
+                    </div>
+                </div>
+                
+                <!-- Device Grid (List View) -->
                 <div class="device-grid" id="deviceGrid"></div>
             </div>
         </section>
         <section class="section hidden" data-section="live-alerts">
             <div class="panel">
-                <h2>Alerts <small>(<span id="alerts-count">0</span>)</small></h2>
+                <div class="panel-header">
+                    <div class="panel-title">🔔 Live Alerts <small>(<span id="alerts-count">0</span> total)</small></div>
+                </div>
                 
                 <div class="toolbar">
-                    <button id="gen-glass" class="btn btn-secondary">Generate Glass Break</button>
-                    <button id="gen-smoke" class="btn btn-secondary">Generate Smoke Alarm</button>
-                    <button id="gen-dog" class="btn btn-secondary">Generate Dog Bark</button>
-                    
-                    <label style="margin-left:1rem;">Status:
-                        <select id="filter-status">
-                            <option value="">All</option>
-                            <option>open</option>
-                            <option>acknowledged</option>
-                            <option>resolved</option>
+                    <label>
+                        Alert Type:
+                        <select id="alert-type-select">
+                            <option value="glass_break">Glass Break</option>
+                            <option value="smoke_alarm">Smoke Alarm</option>
+                            <option value="dog_bark">Dog Bark</option>
+                            <option value="fall">Fall Detected</option>
+                            <option value="no_motion">No Motion</option>
+                            <option value="unusual_noise">Unusual Noise</option>
+                            <option value="door_open">Door Open</option>
+                            <option value="random">Random</option>
                         </select>
                     </label>
+                    <label>
+                        Severity:
+                        <select id="alert-severity-select">
+                            <option value="auto">Auto (ML-based)</option>
+                            <option value="low">🟢 Low</option>
+                            <option value="medium">🟡 Medium</option>
+                            <option value="high">🟠 High</option>
+                            <option value="critical">🔴 Critical</option>
+                        </select>
+                    </label>
+                    <label>
+                        Status:
+                        <select id="filter-status">
+                            <option value="">All Status</option>
+                            <option value="open">Open</option>
+                            <option value="acknowledged">Acknowledged</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </label>
+                    <button id="gen-custom" class="btn btn-primary">+ Generate Alert</button>
+                    <button id="clear-all-alerts" class="btn btn-danger">🗑️ Clear All</button>
                 </div>
                 
                 <table class="table">
                     <thead>
-                        <tr><th>Time</th><th>Type</th><th>House</th><th>Severity</th><th>Status</th><th></th></tr>
+                        <tr>
+                            <th><input type="checkbox" id="select-all-alerts" aria-label="Select all alerts"></th>
+                            <th>Time</th>
+                            <th>Type</th>
+                            <th>House</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
                     </thead>
                     <tbody id="alerts-tbody"></tbody>
                 </table>
@@ -122,14 +178,21 @@
                 <div class="panel-title">Alert History</div>
                 <p>Search historical alerts with filters for severity, device, and acknowledgement.</p>
                 <div class="history-controls">
-                    <input type="date" id="historyStart">
-                    <input type="date" id="historyEnd">
                     <select id="historySeverity">
                         <option value="">All Severities</option>
                         <option value="critical">Critical</option>
-                        <option value="warning">Warning</option>
-                        <option value="info">Info</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
                     </select>
+                    <select id="historyStatus">
+                        <option value="">All Status</option>
+                        <option value="open">Open</option>
+                        <option value="acknowledged">Acknowledged</option>
+                        <option value="resolved">Resolved</option>
+                    </select>
+                    <button class="btn btn-primary" id="applyHistoryFilter">Apply Filter</button>
+                    <button class="btn btn-secondary" id="clearHistoryFilter">Clear</button>
                     <button class="btn btn-secondary" data-action="history-export">Export CSV</button>
                 </div>
                 <table class="history-table" id="historyTable">
@@ -147,14 +210,42 @@
             </div>
         </section>
         <section class="section hidden" data-section="reports">
-            <div class="panel section-placeholder">
-                <div class="panel-title">Reports &amp; Analytics</div>
-                <p>Generate monthly summaries, usage analytics, and AI performance reports.</p>
-                <div class="reports-grid">
-                    <button class="report-card" data-report="monthly">📅 Monthly Summary</button>
-                    <button class="report-card" data-report="behavioral">🧠 Behavioral Trends</button>
-                    <button class="report-card" data-report="accuracy">🎯 ML Accuracy</button>
-                    <button class="report-card" data-report="usage">⚙️ Device Usage</button>
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">📊 Reports & Analytics</div>
+                    <button class="btn btn-primary" id="refreshReports">🔄 Refresh Data</button>
+                </div>
+                
+                <!-- KPI Summary Cards -->
+                <div class="kpi-grid" id="reportsKpiGrid" style="margin-bottom: 2rem;"></div>
+                
+                <!-- Alert Distribution Chart -->
+                <div class="panel" style="margin-bottom: 2rem;">
+                    <div class="panel-title">Alert Distribution by Severity</div>
+                    <canvas id="severityChart" style="max-height: 300px;"></canvas>
+                </div>
+                
+                <!-- Alert Types Chart -->
+                <div class="panel" style="margin-bottom: 2rem;">
+                    <div class="panel-title">Alert Types Breakdown</div>
+                    <canvas id="typesChart" style="max-height: 300px;"></canvas>
+                </div>
+                
+                <!-- Response Time Metrics -->
+                <div class="panel" style="margin-bottom: 2rem;">
+                    <div class="panel-title">Response Time Metrics</div>
+                    <div class="stats-grid" id="responseMetrics"></div>
+                </div>
+                
+                <!-- Quick Report Actions -->
+                <div class="panel">
+                    <div class="panel-title">Generate Reports</div>
+                    <div class="reports-grid">
+                        <button class="report-card" data-report="monthly">📅 Monthly Summary</button>
+                        <button class="report-card" data-report="weekly">📊 Weekly Report</button>
+                        <button class="report-card" data-report="performance">🎯 Performance Report</button>
+                        <button class="report-card" data-report="export">📥 Export All Data</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -218,6 +309,19 @@
         </form>
     </dialog>
 
+    <dialog class="modal" id="deviceDetailsModal">
+        <div class="modal-content">
+            <h2 id="deviceDetailsTitle">Device Details</h2>
+            <div id="deviceDetailsContent" style="padding: 1rem 0;">
+                <!-- Device details will be populated here -->
+            </div>
+            <menu>
+                <button class="btn btn-secondary" id="closeDetailsBtn">Close</button>
+                <button class="btn btn-danger" id="removeDeviceBtn" style="background: #ef4444;">Remove Device</button>
+            </menu>
+        </div>
+    </dialog>
+
     <dialog class="modal" id="alertFilterModal">
         <form method="dialog" class="modal-content" id="alertFilterForm">
             <h2>Filter Alerts</h2>
@@ -226,17 +330,32 @@
                 <select name="severity">
                     <option value="">All Severities</option>
                     <option value="critical">Critical</option>
-                    <option value="warning">Warning</option>
-                    <option value="info">Info</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
                 </select>
             </label>
             <label>
-                Room
-                <input type="text" name="room" placeholder="Kitchen">
+                Alert Type
+                <select name="type">
+                    <option value="">All Types</option>
+                    <option value="glass_break">Glass Break</option>
+                    <option value="smoke_alarm">Smoke Alarm</option>
+                    <option value="fall">Fall Detected</option>
+                    <option value="no_motion">No Motion</option>
+                    <option value="dog_bark">Dog Bark</option>
+                    <option value="unusual_noise">Unusual Noise</option>
+                    <option value="door_open">Door Open</option>
+                </select>
             </label>
             <label>
-                Acknowledged Only
-                <input type="checkbox" name="acknowledged">
+                Status
+                <select name="status">
+                    <option value="">All Status</option>
+                    <option value="open">Open</option>
+                    <option value="acknowledged">Acknowledged</option>
+                    <option value="resolved">Resolved</option>
+                </select>
             </label>
             <menu>
                 <button type="reset" class="btn btn-secondary" value="cancel">Clear</button>
@@ -249,6 +368,6 @@
 
     <script type="module" src="/src/assets/js/toast.js"></script>
     <script type="module" src="/src/assets/js/owner-dashboard.js"></script>
-    <script type="module" src="/src/assets/js/alerts-list.js"></script>
+    <script type="module" src="/src/assets/js/alerts-list-enhanced.js"></script>
 </body>
 </html>
