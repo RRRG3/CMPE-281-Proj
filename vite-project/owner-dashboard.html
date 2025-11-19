@@ -153,8 +153,13 @@
                             <option value="resolved">Resolved</option>
                         </select>
                     </label>
-                    <button id="gen-custom" class="btn btn-primary">+ Generate Alert</button>
-                    <button id="clear-all-alerts" class="btn btn-danger">🗑️ Clear All</button>
+                    <button id="gen-custom" class="btn btn-primary" title="Generate alert for current tenant">+ Generate Alert</button>
+                    <button id="clear-all-alerts" class="btn btn-danger" title="Clear all alerts (all tenants)">🗑️ Clear All</button>
+                </div>
+                <div style="padding: 0.5rem 1rem; background: #f0f9ff; border-left: 3px solid #3b82f6; margin-bottom: 1rem; border-radius: 4px;">
+                    <small style="color: #1e40af;">
+                        <strong>ℹ️</strong> Viewing alerts for <strong id="current-tenant-indicator">selected tenant</strong>. Switch tenants in the dropdown above.
+                    </small>
                 </div>
                 
                 <table class="table">
@@ -289,10 +294,10 @@
             <label>
                 Device Type
                 <select name="type" required>
-                    <option value="Audio Sensor">Audio Sensor</option>
-                    <option value="Video Camera">Video Camera</option>
-                    <option value="Motion Sensor">Motion Sensor</option>
-                    <option value="Door Sensor">Door Sensor</option>
+                    <option value="microphone">🔊 Audio Sensor</option>
+                    <option value="camera">📹 Video Camera</option>
+                    <option value="motion_sensor">🚶 Motion Sensor</option>
+                    <option value="door_sensor">🚪 Door Sensor</option>
                 </select>
             </label>
             <label>
@@ -369,5 +374,6 @@
     <script type="module" src="/src/assets/js/toast.js"></script>
     <script type="module" src="/src/assets/js/owner-dashboard.js"></script>
     <script type="module" src="/src/assets/js/alerts-list-enhanced.js"></script>
+    <script type="module" src="/src/assets/js/alert-generator.js"></script>
 </body>
 </html>

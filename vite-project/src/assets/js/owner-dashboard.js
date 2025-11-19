@@ -23,21 +23,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load tenants and populate selector
   async function loadTenants() {
     try {
+      console.log('[owner] Loading tenants from API...');
       const response = await get('/api/v1/tenants');
       allTenants = response.items || [];
       
+      console.log('[owner] Loaded tenants:', allTenants.length, allTenants);
+      
       const selector = document.getElementById('owner-selector');
+      if (!selector) {
+        console.error('[owner] Tenant selector not found in DOM!');
+        return;
+      }
+      
       selector.innerHTML = allTenants.map(t => 
         `<option value="${t.tenant_id}">${t.name}</option>`
       ).join('');
       
-      // Select first tenant by default
-      if (allTenants.length > 0) {
-        currentTenant = allTenants[0];
+      console.log('[owner] Populated selector with', allTenants.length, 'options');
+      
+      // Check if there's a saved tenant selection in localStorage
+      const savedTenantId = localStorage.getItem('selectedTenantId');
+      let selectedTenant = null;
+      
+      if (savedTenantId) {
+        selectedTenant = allTenants.find(t => t.tenant_id === savedTenantId);
+        console.log('[owner] Found saved tenant:', savedTenantId, selectedTenant ? 'exists' : 'not found');
+      }
+      
+      // If no saved tenant or saved tenant not found, use first tenant
+      if (!selectedTenant && allTenants.length > 0) {
+        selectedTenant = allTenants[0];
+        console.log('[owner] Using first tenant as default:', selectedTenant.name);
+      }
+      
+      if (selectedTenant) {
+        currentTenant = selectedTenant;
+        selector.value = selectedTenant.tenant_id;
         updateUIForTenant(currentTenant);
+        console.log('[owner] Set default tenant:', currentTenant.name);
       }
     } catch (err) {
-      console.error('Failed to load tenants:', err);
+      console.error('[owner] Failed to load tenants:', err);
     }
   }
 
@@ -50,6 +76,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const initials = tenant.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
     document.getElementById('user-avatar').textContent = initials;
     
+    // Update tenant indicator in Live Alerts section
+    const tenantIndicator = document.getElementById('current-tenant-indicator');
+    if (tenantIndicator) {
+      tenantIndicator.textContent = tenant.name;
+    }
+    
     // Store current tenant globally for other scripts to access
     window.currentTenant = tenant;
     
@@ -61,10 +93,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tenantId = e.target.value;
     currentTenant = allTenants.find(t => t.tenant_id === tenantId);
     if (currentTenant) {
+      // Save selection to localStorage
+      localStorage.setItem('selectedTenantId', currentTenant.tenant_id);
+      console.log('[owner] Saved tenant selection:', currentTenant.tenant_id);
+      
       updateUIForTenant(currentTenant);
-      toast(`Switched to ${currentTenant.name}`, 'info');
+      toast(`Switching to ${currentTenant.name}...`, 'info');
+      
       // Reload data for new tenant
-      location.reload();
+      setTimeout(() => {
+        location.reload();
+      }, 300);
     }
   });
 
@@ -218,12 +257,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
       
       deviceData = devices.map(d => ({
+        id: d.id,  // Internal database ID (needed for deletion)
+        device_id: d.device_id,  // User-facing device ID
         name: `${d.location} ${d.type}`,
         location: d.location,
         type: iconMap[d.type] || '📡 ' + d.type,
         status: d.status,
-        lastSeen: d.last_seen ? formatTimeAgo(d.last_seen) : 'Unknown',
-        device_id: d.device_id
+        lastSeen: d.last_seen ? formatTimeAgo(d.last_seen) : 'Unknown'
       }));
       
       console.log(`[owner] Loaded ${deviceData.length} devices for tenant ${tenantId}`);
@@ -578,23 +618,45 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   
   // Remove device function
-  function removeDevice(device, index) {
-    if (confirm(`Are you sure you want to remove "${device.name}"?\n\nThis device will be disconnected from your home.`)) {
-      toast(`🗑️ Removing ${device.name}...`, 'info');
+  async function removeDevice(device, index) {
+    if (!confirm(`Are you sure you want to remove "${device.name}"?\n\nThis device will be permanently deleted from the database.`)) {
+      return;
+    }
+    
+    toast(`🗑️ Removing ${device.name}...`, 'info');
+    
+    try {
+      // Get the device ID - it might be in device.id or device.device_id
+      const deviceId = device.id || device.device_id;
       
-      // Remove from array
-      if (index !== undefined) {
-        deviceData.splice(index, 1);
-      } else {
-        const idx = deviceData.findIndex(d => d.name === device.name);
-        if (idx !== -1) deviceData.splice(idx, 1);
+      if (!deviceId) {
+        console.error('[OWNER] No device ID found:', device);
+        toast('Error: Device ID not found', 'error');
+        return;
       }
       
-      // Re-render
-      renderDevices();
+      // Call API to delete device from database
+      const response = await fetch(`http://localhost:3000/api/v1/devices/${deviceId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       
-      toast(`✓ ${device.name} has been removed`, 'success');
-      console.log('[OWNER] Device removed:', device.name);
+      if (response.ok) {
+        toast(`✓ ${device.name} has been removed`, 'success');
+        console.log('[OWNER] Device deleted from database:', device.name);
+        
+        // Reload devices to refresh the display
+        await renderDevices();
+      } else {
+        const error = await response.json();
+        toast(`Failed to remove device: ${error.error || 'Unknown error'}`, 'error');
+        console.error('[OWNER] Failed to delete device:', error);
+      }
+    } catch (err) {
+      console.error('[OWNER] Error removing device:', err);
+      toast(`Error removing device: ${err.message}`, 'error');
     }
   }
   
@@ -606,31 +668,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!historyTable) return;
     
     try {
-      // Fetch real alert history from backend
-      const response = await post('/api/v1/alerts/search', { limit: 50 });
+      // Fetch real alert history from backend (filtered by current tenant)
+      const searchParams = { limit: 100 };
+      if (currentTenant?.tenant_id) {
+        searchParams.tenant_id = currentTenant.tenant_id;
+      }
+      
+      const response = await post('/api/v1/alerts/search', searchParams);
       const alerts = response.items || [];
       
       historyTable.innerHTML = '';
       
       if (alerts.length === 0) {
-        historyTable.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #666;">No alert history available</td></tr>';
+        historyTable.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #666;">No alert history available for this tenant</td></tr>';
         return;
       }
       
       alerts.forEach((alert) => {
         const tr = document.createElement('tr');
-        const timestamp = new Date(alert.ts || alert.created_at).toLocaleString();
-        const alertTitle = `${alert.type.replace(/_/g, ' ')} - ${alert.house_id}`;
+        const timestamp = new Date(alert.ts || alert.created_at).toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        // Format alert type nicely
+        const alertType = alert.type.replace(/_/g, ' ').split(' ').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+        
         const statusText = alert.status.charAt(0).toUpperCase() + alert.status.slice(1);
         
+        // Severity badge colors
+        const severityColors = {
+          'critical': 'danger',
+          'high': 'warning',
+          'medium': 'info',
+          'low': 'success'
+        };
+        const severityBadge = severityColors[alert.severity] || 'info';
+        
+        // Status badge colors
+        const statusColors = {
+          'resolved': 'success',
+          'acknowledged': 'info',
+          'open': 'warning',
+          'escalated': 'danger'
+        };
+        const statusBadge = statusColors[alert.status] || 'warning';
+        
         tr.innerHTML = `
-          <td>${timestamp}</td>
-          <td>${alertTitle}</td>
-          <td>${alert.device_id}</td>
-          <td class="history-${alert.severity}"><span class="badge ${alert.severity === 'critical' ? 'danger' : alert.severity === 'high' ? 'warning' : 'info'}">${alert.severity.toUpperCase()}</span></td>
-          <td><span class="badge ${alert.status === 'resolved' ? 'success' : alert.status === 'acknowledged' ? 'info' : 'warning'}">${statusText}</span></td>
+          <td style="white-space: nowrap;">${timestamp}</td>
+          <td><strong>${alertType}</strong><br><small style="color: #666;">${alert.message || 'No description'}</small></td>
+          <td><code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px; font-size: 0.85em;">${alert.device_id}</code></td>
+          <td><span class="badge ${severityBadge}">${alert.severity.toUpperCase()}</span></td>
+          <td><span class="badge ${statusBadge}">${statusText}</span></td>
         `;
         tr.style.cursor = 'pointer';
+        tr.style.transition = 'background-color 0.2s';
+        tr.addEventListener('mouseenter', () => {
+          tr.style.backgroundColor = '#f9fafb';
+        });
+        tr.addEventListener('mouseleave', () => {
+          tr.style.backgroundColor = '';
+        });
         tr.addEventListener('click', () => {
           window.location.href = `alert-detail.html?id=${alert.id}`;
         });
@@ -700,21 +803,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (deviceForm) {
-      deviceForm.addEventListener('submit', (event) => {
+      deviceForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(deviceForm);
-        const newDevice = {
+        
+        const devicePayload = {
+          house_id: currentTenant?.house_id || null,
+          device_type: formData.get('type'),
           name: formData.get('name'),
+          tenant: currentTenant?.tenant_id || 'default',
           location: formData.get('location'),
           type: formData.get('type'),
           status: formData.get('status'),
-          lastSeen: formData.get('status') === 'online' ? 'Just now' : 'Offline: just added'
+          firmware: 'v2.4.1',
+          config: {}
         };
-        deviceData.unshift(newDevice);
-        renderDevices();
-        toast(`${newDevice.name} added to your home.`, 'success');
-        deviceForm.reset();
-        deviceModal.close();
+        
+        try {
+          toast(`Adding ${devicePayload.name}...`, 'info');
+          
+          const response = await post('/api/v1/devices', devicePayload);
+          
+          if (response.id || response.device_id) {
+            toast(`✓ ${devicePayload.name} added successfully!`, 'success');
+            
+            // Reload devices to show the new one
+            await renderDevices();
+            
+            deviceForm.reset();
+            deviceModal.close();
+          } else {
+            toast('Failed to add device', 'error');
+          }
+        } catch (err) {
+          console.error('[owner] Failed to add device:', err);
+          toast(`Error adding device: ${err.message}`, 'error');
+        }
       });
 
       deviceForm.addEventListener('reset', () => {
@@ -978,14 +1102,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Render Severity Chart
       const severityCtx = document.getElementById('severityChart');
       if (severityCtx) {
+        // Destroy existing chart if it exists
+        const existingChart = Chart.getChart(severityCtx);
+        if (existingChart) {
+          existingChart.destroy();
+        }
+        
         const severityData = stats.bySeverity || {};
+        
+        // Always show all four severity levels, even if count is 0
+        const allSeverities = ['critical', 'high', 'medium', 'low'];
+        const labels = allSeverities.map(s => s.charAt(0).toUpperCase() + s.slice(1));
+        const data = allSeverities.map(s => severityData[s] || 0);
+        const colors = {
+          'critical': '#ef4444',  // Red
+          'high': '#f59e0b',      // Orange
+          'medium': '#3b82f6',    // Blue
+          'low': '#10b981'        // Green
+        };
+        const backgroundColors = allSeverities.map(s => colors[s]);
+        
         new Chart(severityCtx, {
           type: 'doughnut',
           data: {
-            labels: Object.keys(severityData).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
+            labels: labels,
             datasets: [{
-              data: Object.values(severityData),
-              backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'],
+              data: data,
+              backgroundColor: backgroundColors,
               borderWidth: 3,
               borderColor: '#fff',
               hoverOffset: 8,
@@ -1050,6 +1193,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       const typesCtx = document.getElementById('typesChart');
       if (typesCtx && alerts.length > 0) {
+        // Destroy existing chart if it exists
+        const existingTypesChart = Chart.getChart(typesCtx);
+        if (existingTypesChart) {
+          existingTypesChart.destroy();
+        }
+        
         const typeCounts = {};
         alerts.forEach(alert => {
           const type = alert.type.replace(/_/g, ' ');

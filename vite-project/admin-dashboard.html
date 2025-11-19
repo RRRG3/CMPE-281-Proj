@@ -473,6 +473,66 @@
         </form>
     </dialog>
 
+    <dialog class="modal" id="systemSettingsModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0; padding: 0; border: none; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); background: transparent; max-width: 90vw; max-height: 90vh;">
+        <form method="dialog" class="modal-content" id="systemSettingsForm" style="max-width: 600px; max-height: 80vh; overflow-y: auto; background: white; padding: 2rem; border-radius: 12px;">
+            <h2>🔧 System Settings</h2>
+            <p style="color: #666; margin: 1rem 0 1.5rem 0;">Configure system-wide settings and preferences.</p>
+            
+            <div style="border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #374151;">Alert Configuration</h3>
+                <label style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; cursor: pointer;">
+                    <input type="checkbox" name="autoEscalation" checked style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-size: 0.95rem;">Enable automatic alert escalation</span>
+                </label>
+                <label style="display: block; margin-bottom: 0.5rem;">
+                    <span style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Escalation timeout (minutes)</span>
+                    <input type="number" name="escalationTimeout" value="15" min="5" max="60" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </label>
+            </div>
+            
+            <div style="border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #374151;">Notification Settings</h3>
+                <label style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; cursor: pointer;">
+                    <input type="checkbox" name="emailNotifications" checked style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-size: 0.95rem;">Send email notifications</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="smsNotifications" style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-size: 0.95rem;">Send SMS notifications <small style="color: #6b7280;">(requires configuration)</small></span>
+                </label>
+            </div>
+            
+            <div style="border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #374151;">Data Retention</h3>
+                <label style="display: block; margin-bottom: 1rem;">
+                    <span style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Alert history retention (days)</span>
+                    <input type="number" name="alertRetention" value="90" min="30" max="365" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </label>
+                <label style="display: block; margin-bottom: 0.5rem;">
+                    <span style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Audit log retention (days)</span>
+                    <input type="number" name="auditRetention" value="90" min="30" max="365" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </label>
+            </div>
+            
+            <div style="padding-bottom: 1rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #374151;">System Maintenance</h3>
+                <label style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; cursor: pointer;">
+                    <input type="checkbox" name="autoBackup" checked style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-size: 0.95rem;">Enable automatic daily backups</span>
+                </label>
+                <label style="display: block; margin-bottom: 0.5rem;">
+                    <span style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Backup time</span>
+                    <input type="time" name="backupTime" value="02:00" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </label>
+            </div>
+            
+            <menu style="margin-top: 1.5rem;">
+                <button type="reset" class="btn btn-secondary" value="cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </menu>
+        </form>
+    </dialog>
+
     <script type="module" src="/src/assets/js/toast.js"></script>
     <script type="module" src="/src/assets/js/admin-dashboard.js"></script>
 </body>

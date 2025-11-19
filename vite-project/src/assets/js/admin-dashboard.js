@@ -213,11 +213,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             break;
             
           case 'device-settings':
-            toast('🔧 Opening system settings...', 'info');
-            console.log('[ADMIN] System settings opened');
-            setTimeout(() => {
-              toast('System settings panel would open here', 'success');
-            }, 500);
+            // Open system settings modal
+            const settingsModal = document.getElementById('systemSettingsModal');
+            if (settingsModal) {
+              settingsModal.showModal();
+            }
             break;
             
           default:
@@ -550,6 +550,58 @@ document.addEventListener('DOMContentLoaded', async () => {
       systemAlertForm.addEventListener('reset', () => {
         document.getElementById('systemAlertModal').close();
       });
+    }
+    
+    // System settings form
+    const systemSettingsForm = document.getElementById('systemSettingsForm');
+    if (systemSettingsForm) {
+      systemSettingsForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(systemSettingsForm);
+        
+        const settings = {
+          autoEscalation: formData.get('autoEscalation') === 'on',
+          escalationTimeout: parseInt(formData.get('escalationTimeout')),
+          emailNotifications: formData.get('emailNotifications') === 'on',
+          smsNotifications: formData.get('smsNotifications') === 'on',
+          alertRetention: parseInt(formData.get('alertRetention')),
+          auditRetention: parseInt(formData.get('auditRetention')),
+          autoBackup: formData.get('autoBackup') === 'on',
+          backupTime: formData.get('backupTime')
+        };
+        
+        // Save to localStorage (in a real app, this would go to the backend)
+        localStorage.setItem('systemSettings', JSON.stringify(settings));
+        
+        toast('✓ System settings saved successfully!', 'success');
+        console.log('[ADMIN] Settings saved:', settings);
+        document.getElementById('systemSettingsModal').close();
+      });
+      
+      systemSettingsForm.addEventListener('reset', () => {
+        document.getElementById('systemSettingsModal').close();
+      });
+      
+      // Load saved settings when modal opens
+      const settingsModal = document.getElementById('systemSettingsModal');
+      if (settingsModal) {
+        settingsModal.addEventListener('click', (e) => {
+          if (e.target === settingsModal) {
+            const savedSettings = localStorage.getItem('systemSettings');
+            if (savedSettings) {
+              const settings = JSON.parse(savedSettings);
+              systemSettingsForm.querySelector('[name="autoEscalation"]').checked = settings.autoEscalation;
+              systemSettingsForm.querySelector('[name="escalationTimeout"]').value = settings.escalationTimeout;
+              systemSettingsForm.querySelector('[name="emailNotifications"]').checked = settings.emailNotifications;
+              systemSettingsForm.querySelector('[name="smsNotifications"]').checked = settings.smsNotifications;
+              systemSettingsForm.querySelector('[name="alertRetention"]').value = settings.alertRetention;
+              systemSettingsForm.querySelector('[name="auditRetention"]').value = settings.auditRetention;
+              systemSettingsForm.querySelector('[name="autoBackup"]').checked = settings.autoBackup;
+              systemSettingsForm.querySelector('[name="backupTime"]').value = settings.backupTime;
+            }
+          }
+        });
+      }
     }
   }
 

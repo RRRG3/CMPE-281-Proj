@@ -527,7 +527,11 @@ function setupWebSocket() {
 // Initialize
 createAriaLiveRegion();
 loadAlerts();
-setupWebSocket();
+
+// Setup WebSocket after a short delay to allow tenant to load
+setTimeout(() => {
+  setupWebSocket();
+}, 1000);
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {

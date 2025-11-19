@@ -1352,7 +1352,7 @@ app.get('/api/v1/admin/audit-logs/export', (req, res) => {
 // ============ DEVICE MANAGEMENT ENDPOINTS ============
 
 // POST /api/v1/devices - Register a new device
-app.post('/api/v1/devices', authenticate, (req, res) => {
+app.post('/api/v1/devices', (req, res) => {
   const { house_id, device_type, name, deviceId, tenant, location, type, status='online', firmware='v2.4.1', config={} } = req.body || {};
   
   // Support both new format (house_id, device_type, name) and old format (deviceId, tenant, location, type)
