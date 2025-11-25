@@ -158,7 +158,7 @@
   - Return JSON with device_id, uptimePct, alertsGenerated, avgSnr, lastSeen
   - _Requirements: 21.1, 21.2, 21.3, 21.4, 21.5_
 
-- [ ] 18. Implement ML prediction endpoint
+- [x] 18. Implement ML prediction endpoint
   - Create POST `/api/v1/ml/predict` route with authenticate middleware
   - Extract device_id, window_uri, timestamp, features from request body
   - For development: return mock prediction with label 'glass_break' and score 0.91
@@ -168,7 +168,7 @@
 
 ## Phase 2: Alert Management Enhancement
 
-- [ ] 19. Update alert ingestion endpoint with PostgreSQL
+- [x] 19. Update alert ingestion endpoint with PostgreSQL
   - Update POST `/api/v1/alerts/ingest` route to use PostgreSQL instead of SQLite
   - Add authenticate middleware
   - Validate house_id and device_id exist in database
@@ -179,7 +179,7 @@
   - Log notification simulation
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
 
-- [ ] 20. Update alert search endpoint with PostgreSQL
+- [x] 20. Update alert search endpoint with PostgreSQL
   - Update POST `/api/v1/alerts/search` route to use PostgreSQL
   - Add authenticate middleware
   - Add owner access control: filter by houses user owns if not admin
@@ -189,7 +189,7 @@
   - Return JSON with items array
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
 
-- [ ] 21. Implement alert stats/KPI endpoint
+- [x] 21. Implement alert stats/KPI endpoint
   - Create GET `/api/v1/alerts/stats` route with authenticate middleware
   - Calculate open alerts count (state IN ('new', 'escalated'))
   - Calculate MTTA in seconds using AVG(acknowledged_at - occurred_at)
@@ -200,7 +200,7 @@
   - Return JSON with openCount, mttaSec, mttrSec, bySeverity, byState, totalAlerts, recentAlerts
   - _Requirements: 23.1, 23.2, 23.3, 23.4, 23.5_
 
-- [ ] 22. Update alert detail endpoint with PostgreSQL
+- [x] 22. Update alert detail endpoint with PostgreSQL
   - Update GET `/api/v1/alerts/:id` route to use PostgreSQL
   - Add authenticate middleware
   - Verify user has access to alert's house
@@ -209,7 +209,7 @@
   - Return JSON with alert object (including house and device info) and history array
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 26.1, 26.2, 26.3, 26.4_
 
-- [ ] 23. Update alert acknowledge endpoint with PostgreSQL
+- [x] 23. Update alert acknowledge endpoint with PostgreSQL
   - Update POST `/api/v1/alerts/:id/ack` route to use PostgreSQL
   - Add authenticate middleware
   - Use req.user.user_id as actor instead of request body
@@ -221,7 +221,7 @@
   - Return JSON with state and acknowledged_at
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 28.1, 28.2_
 
-- [ ] 24. Update alert escalate endpoint with PostgreSQL
+- [x] 24. Update alert escalate endpoint with PostgreSQL
   - Update POST `/api/v1/alerts/:id/escalate` route to use PostgreSQL
   - Add authenticate middleware
   - Validate state transition (cannot escalate if resolved)
@@ -233,7 +233,7 @@
   - Return JSON with state and escalation_level
   - _Requirements: 28.3_
 
-- [ ] 25. Update alert resolve endpoint with PostgreSQL
+- [x] 25. Update alert resolve endpoint with PostgreSQL
   - Update POST `/api/v1/alerts/:id/resolve` route to use PostgreSQL
   - Add authenticate middleware
   - Require note parameter, return 400 if missing

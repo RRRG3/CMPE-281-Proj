@@ -14,6 +14,11 @@ import { connectMongo, getTelemetryCollection, getMLInferenceCollection } from '
 import { hashPassword, comparePassword, generateAccessToken, generateRefreshToken, validatePassword } from './auth/utils.js';
 import { authenticate, requireRole } from './middleware/auth.js';
 
+// Services
+import { sendAlertNotifications, getAlertRecipients } from './services/notification.js';
+import analytics from './services/analytics.js';
+import mlPipeline from './services/ml-pipeline.js';
+
 const PORT = process.env.PORT || 3000;
 const app = express();
 
@@ -694,7 +699,7 @@ app.get('/api/v1/metrics/device/:id', authenticate, async (req, res) => {
 // POST /api/v1/ml/predict
 app.post('/api/v1/ml/predict', authenticate, async (req, res) => {
   try {
-    const { device_id, window_uri, ts, features } = req.body;
+    const { device_id, window_uri, ts, features, alert_id } = req.body;
 
     if (!device_id) {
       return res.status(400).json({ 
@@ -703,41 +708,958 @@ app.post('/api/v1/ml/predict', authenticate, async (req, res) => {
       });
     }
 
+    // Verify device exists
+    const deviceResult = await pool.query(
+      'SELECT device_id FROM devices WHERE device_id = $1',
+      [device_id]
+    );
+
+    if (deviceResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Device not found' });
+    }
+
     // Mock ML prediction for development
+    // In production, this would call an actual ML service
     const mockPredictions = [
-      { label: 'glass_break', score: 0.91 },
-      { label: 'smoke_alarm', score: 0.95 },
-      { label: 'dog_bark', score: 0.78 },
-      { label: 'fall', score: 0.88 },
-      { label: 'unusual_noise', score: 0.72 }
+      { label: 'glass_break', score: 0.91, confidence: 'high' },
+      { label: 'smoke_alarm', score: 0.95, confidence: 'high' },
+      { label: 'dog_bark', score: 0.78, confidence: 'medium' },
+      { label: 'fall', score: 0.88, confidence: 'high' },
+      { label: 'unusual_noise', score: 0.72, confidence: 'medium' },
+      { label: 'door_open', score: 0.65, confidence: 'medium' },
+      { label: 'normal', score: 0.45, confidence: 'low' }
     ];
 
     const prediction = mockPredictions[Math.floor(Math.random() * mockPredictions.length)];
 
     // Store inference in MongoDB
-    const mlInferenceCollection = getMLInferenceCollection();
-    const inferenceDoc = {
-      device_id,
-      ts: ts ? new Date(ts) : new Date(),
-      model_name: 'audio_classifier_v1',
-      score: prediction.score,
-      label: prediction.label,
-      window_uri: window_uri || null,
-      features: features || null
-    };
+    try {
+      const mlInferenceCollection = getMLInferenceCollection();
+      const inferenceDoc = {
+        alert_id: alert_id || null,
+        device_id,
+        ts: ts ? new Date(ts) : new Date(),
+        model_name: 'audio_classifier_v3',
+        model_version: '3.2.1',
+        score: prediction.score,
+        label: prediction.label,
+        confidence: prediction.confidence,
+        window_uri: window_uri || null,
+        features: features || null,
+        created_at: new Date()
+      };
 
-    const insertResult = await mlInferenceCollection.insertOne(inferenceDoc);
+      const insertResult = await mlInferenceCollection.insertOne(inferenceDoc);
 
-    console.log(`[ml/predict] Prediction for device ${device_id}: ${prediction.label} (${prediction.score})`);
+      console.log(`[ml/predict] Prediction for device ${device_id}: ${prediction.label} (score: ${prediction.score}, confidence: ${prediction.confidence})`);
 
-    res.json({
-      prediction: prediction.label,
-      score: prediction.score,
-      inference_id: insertResult.insertedId.toString()
-    });
+      res.json({
+        prediction: prediction.label,
+        score: prediction.score,
+        confidence: prediction.confidence,
+        inference_id: insertResult.insertedId.toString(),
+        model: 'audio_classifier_v3',
+        timestamp: nowISO()
+      });
+    } catch (mongoError) {
+      // If MongoDB is not available, still return prediction but log warning
+      console.warn('[ml/predict] MongoDB not available, prediction not stored:', mongoError.message);
+      
+      res.json({
+        prediction: prediction.label,
+        score: prediction.score,
+        confidence: prediction.confidence,
+        inference_id: null,
+        model: 'audio_classifier_v3',
+        timestamp: nowISO(),
+        warning: 'Prediction not persisted - MongoDB unavailable'
+      });
+    }
   } catch (error) {
     console.error('[ml/predict] Error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============ ML-BASED SEVERITY DECISION ENGINE ============
+
+/**
+ * ML-based severity decision engine
+ * Determines alert severity based on event type, ML score, duration, and context
+ */
+function decideSeverity(event) {
+  const { type, score = 0.5, duration = 0, inQuietHours = false } = event;
+  
+  // Critical alerts - immediate danger, requires immediate action
+  if (type === 'smoke_alarm') return 'critical';
+  if (type === 'glass_break' && score >= 0.85) return 'critical';
+  if (type === 'fall' && score >= 0.8) return 'critical';
+  if (type === 'fire' || type === 'gas_leak') return 'critical';
+  
+  // High severity - requires prompt attention
+  if (type === 'fall') return 'high';
+  if (type === 'glass_break') return 'high';
+  if (type === 'no_motion' && duration >= 30 * 60) {
+    // No motion for 30+ minutes
+    return inQuietHours ? 'high' : 'medium';
+  }
+  if (type === 'unusual_noise' && score >= 0.85) return 'high';
+  
+  // Medium severity - monitor and investigate
+  if (type === 'unusual_noise' && score >= 0.7) return 'medium';
+  if (type === 'no_motion' && duration >= 15 * 60) return 'medium';
+  if (type === 'door_open' && inQuietHours) return 'medium';
+  
+  // Low severity - informational
+  if (type === 'dog_bark') return 'low';
+  if (type === 'door_open') return 'low';
+  if (type === 'normal') return 'low';
+  
+  // Default based on ML confidence score
+  if (score >= 0.85) return 'high';
+  if (score >= 0.7) return 'medium';
+  if (score >= 0.5) return 'low';
+  
+  return 'low';
+}
+
+/**
+ * Check if current time is in quiet hours (10 PM - 6 AM)
+ */
+function isQuietHours(timestamp) {
+  const date = new Date(timestamp);
+  const hour = date.getHours();
+  return hour >= 22 || hour < 6;
+}
+
+// ============ ALERT MANAGEMENT ENDPOINTS ============
+
+// POST /api/v1/alerts/ingest
+app.post('/api/v1/alerts/ingest', authenticate, async (req, res) => {
+  try {
+    const { 
+      house_id, 
+      device_id, 
+      type, 
+      message = '',
+      score = 0.5,
+      duration = 0,
+      severity: manualSeverity,
+      ts
+    } = req.body;
+
+    if (!type) {
+      return res.status(400).json({ 
+        error: 'VALIDATION_ERROR',
+        details: ['type is required']
+      });
+    }
+
+    if (!house_id || !device_id) {
+      return res.status(400).json({ 
+        error: 'VALIDATION_ERROR',
+        details: ['house_id and device_id are required']
+      });
+    }
+
+    // Verify house exists
+    const houseResult = await pool.query(
+      'SELECT house_id, owner_id FROM houses WHERE house_id = $1',
+      [house_id]
+    );
+
+    if (houseResult.rows.length === 0) {
+      return res.status(404).json({ error: 'House not found' });
+    }
+
+    // Verify device exists
+    const deviceResult = await pool.query(
+      'SELECT device_id FROM devices WHERE device_id = $1',
+      [device_id]
+    );
+
+    if (deviceResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Device not found' });
+    }
+
+    const occurred_at = ts || nowISO();
+    const inQuietHours = isQuietHours(occurred_at);
+
+    // Deduplication: check for recent similar alert (within 60 seconds)
+    const dedupeResult = await pool.query(
+      `SELECT alert_id FROM alerts 
+       WHERE device_id = $1 AND type = $2 
+       AND occurred_at > $3::timestamp - interval '60 seconds'
+       AND state IN ('new', 'escalated')
+       LIMIT 1`,
+      [device_id, type, occurred_at]
+    );
+
+    if (dedupeResult.rows.length > 0) {
+      console.log(`[dedup] Ignoring duplicate ${type} from ${device_id}`);
+      return res.json({ 
+        alert_id: dedupeResult.rows[0].alert_id, 
+        deduplicated: true 
+      });
+    }
+
+    // Use manual severity if provided, otherwise use ML-based decision
+    const severity = manualSeverity && ['low', 'medium', 'high', 'critical'].includes(manualSeverity)
+      ? manualSeverity
+      : decideSeverity({ type, score, duration, inQuietHours });
+
+    // Insert alert
+    const insertResult = await pool.query(
+      `INSERT INTO alerts (
+        house_id, device_id, type, severity, state, status, score, message, occurred_at
+      ) VALUES ($1, $2, $3, $4, 'new', 'open', $5, $6, $7)
+      RETURNING *`,
+      [house_id, device_id, type, severity, score, message, occurred_at]
+    );
+
+    const alert = insertResult.rows[0];
+
+    // Insert history entry
+    await pool.query(
+      `INSERT INTO alert_history (alert_id, action, actor, note, meta)
+       VALUES ($1, 'created', $2, $3, $4)`,
+      [
+        alert.alert_id,
+        null, // system created
+        message,
+        JSON.stringify({ score, duration, inQuietHours, severity, ml_based: !manualSeverity })
+      ]
+    );
+
+    // Broadcast via WebSocket
+    broadcast('alert.new', alert);
+
+    // Send notifications
+    const severitySource = manualSeverity ? 'manual' : 'ML-based';
+    console.log(`[alert/ingest] Alert ${alert.alert_id}: ${type} (${severity} - ${severitySource}, score: ${score})`);
+    
+    // Get recipients and send notifications asynchronously
+    getAlertRecipients(alert, pool)
+      .then(recipients => sendAlertNotifications(alert, recipients, pool))
+      .catch(err => console.error('[alert/ingest] Notification error:', err.message));
+
+    res.json({ 
+      alert_id: alert.alert_id,
+      severity, 
+      state: 'new',
+      score,
+      occurred_at: alert.occurred_at
+    });
+  } catch (error) {
+    console.error('[alert/ingest] Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/v1/alerts/search
+app.post('/api/v1/alerts/search', authenticate, async (req, res) => {
+  try {
+    const { severity, status, state, type, since, house_id, device_id, limit = 50 } = req.body;
+
+    const whereClauses = [];
+    const params = [];
+    let paramIndex = 1;
+
+    // Access control: non-admins can only see alerts from their houses
+    if (req.user.role !== 'ADMIN') {
+      whereClauses.push(`house_id IN (SELECT house_id FROM houses WHERE owner_id = $${paramIndex++})`);
+      params.push(req.user.user_id);
+    }
+
+    // Apply filters
+    if (severity) {
+      whereClauses.push(`severity = $${paramIndex++}`);
+      params.push(severity);
+    }
+
+    if (status) {
+      whereClauses.push(`status = $${paramIndex++}`);
+      params.push(status);
+    }
+
+    if (state) {
+      whereClauses.push(`state = $${paramIndex++}`);
+      params.push(state);
+    }
+
+    if (type) {
+      whereClauses.push(`type = $${paramIndex++}`);
+      params.push(type);
+    }
+
+    if (since) {
+      whereClauses.push(`occurred_at >= $${paramIndex++}`);
+      params.push(since);
+    }
+
+    if (house_id) {
+      whereClauses.push(`house_id = $${paramIndex++}`);
+      params.push(house_id);
+    }
+
+    if (device_id) {
+      whereClauses.push(`device_id = $${paramIndex++}`);
+      params.push(device_id);
+    }
+
+    const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+    const query = `
+      SELECT * FROM alerts
+      ${whereClause}
+      ORDER BY occurred_at DESC
+      LIMIT $${paramIndex}
+    `;
+
+    params.push(limit);
+
+    const result = await pool.query(query, params);
+
+    res.json({ items: result.rows, count: result.rows.length });
+  } catch (error) {
+    console.error('[alert/search] Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/v1/alerts/stats
+app.get('/api/v1/alerts/stats', authenticate, async (req, res) => {
+  try {
+    const whereClauses = [];
+    const params = [];
+    let paramIndex = 1;
+
+    // Access control
+    if (req.user.role !== 'ADMIN') {
+      whereClauses.push(`house_id IN (SELECT house_id FROM houses WHERE owner_id = $${paramIndex++})`);
+      params.push(req.user.user_id);
+    }
+
+    const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+    // Open alerts count
+    const openCountResult = await pool.query(
+      `SELECT COUNT(*) as count FROM alerts 
+       ${whereClause} ${whereClauses.length > 0 ? 'AND' : 'WHERE'} state IN ('new', 'escalated')`,
+      params
+    );
+    const openCount = parseInt(openCountResult.rows[0].count);
+
+    // MTTA (Mean Time To Acknowledge) in seconds
+    const mttaResult = await pool.query(
+      `SELECT AVG(EXTRACT(EPOCH FROM (acknowledged_at - occurred_at))) as mtta_sec
+       FROM alerts 
+       ${whereClause} ${whereClauses.length > 0 ? 'AND' : 'WHERE'} acknowledged_at IS NOT NULL`,
+      params
+    );
+    const mttaSec = Math.round(mttaResult.rows[0].mtta_sec || 0);
+
+    // MTTR (Mean Time To Resolve) in seconds
+    const mttrResult = await pool.query(
+      `SELECT AVG(EXTRACT(EPOCH FROM (resolved_at - occurred_at))) as mttr_sec
+       FROM alerts 
+       ${whereClause} ${whereClauses.length > 0 ? 'AND' : 'WHERE'} resolved_at IS NOT NULL`,
+      params
+    );
+    const mttrSec = Math.round(mttrResult.rows[0].mttr_sec || 0);
+
+    // Severity breakdown
+    const severityResult = await pool.query(
+      `SELECT severity, COUNT(*) as count FROM alerts ${whereClause} GROUP BY severity`,
+      params
+    );
+    const bySeverity = {};
+    severityResult.rows.forEach(row => {
+      bySeverity[row.severity] = parseInt(row.count);
+    });
+
+    // State breakdown
+    const stateResult = await pool.query(
+      `SELECT state, COUNT(*) as count FROM alerts ${whereClause} GROUP BY state`,
+      params
+    );
+    const byState = {};
+    stateResult.rows.forEach(row => {
+      byState[row.state] = parseInt(row.count);
+    });
+
+    // Total alerts
+    const totalResult = await pool.query(
+      `SELECT COUNT(*) as count FROM alerts ${whereClause}`,
+      params
+    );
+    const totalAlerts = parseInt(totalResult.rows[0].count);
+
+    // Recent alerts (last 24 hours)
+    const recentResult = await pool.query(
+      `SELECT COUNT(*) as count FROM alerts 
+       ${whereClause} ${whereClauses.length > 0 ? 'AND' : 'WHERE'} 
+       occurred_at > NOW() - INTERVAL '24 hours'`,
+      params
+    );
+    const recentAlerts = parseInt(recentResult.rows[0].count);
+
+    res.json({
+      openCount,
+      mttaSec,
+      mttrSec,
+      bySeverity,
+      byState,
+      totalAlerts,
+      recentAlerts,
+      timestamp: nowISO()
+    });
+  } catch (error) {
+    console.error('[alert/stats] Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/v1/alerts/:id
+app.get('/api/v1/alerts/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get alert with house and device info
+    const alertResult = await pool.query(
+      `SELECT a.*, 
+              h.address as house_address, h.owner_id, h.timezone,
+              d.name as device_name, d.device_type
+       FROM alerts a
+       JOIN houses h ON a.house_id = h.house_id
+       JOIN devices d ON a.device_id = d.device_id
+       WHERE a.alert_id = $1`,
+      [id]
+    );
+
+    if (alertResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+
+    const alert = alertResult.rows[0];
+
+    // Check access control
+    if (req.user.role !== 'ADMIN' && alert.owner_id !== req.user.user_id) {
+      return res.status(403).json({ 
+        error: 'Insufficient permissions'
+      });
+    }
+
+    // Get alert history
+    const historyResult = await pool.query(
+      `SELECT * FROM alert_history 
+       WHERE alert_id = $1 
+       ORDER BY ts ASC`,
+      [id]
+    );
+
+    res.json({ 
+      alert, 
+      history: historyResult.rows 
+    });
+  } catch (error) {
+    console.error('[alert/:id] Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/v1/alerts/:id/ack
+app.post('/api/v1/alerts/:id/ack', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { note = '' } = req.body;
+    const actor = req.user.user_id;
+
+    // Get alert
+    const alertResult = await pool.query(
+      `SELECT a.*, h.owner_id FROM alerts a
+       JOIN houses h ON a.house_id = h.house_id
+       WHERE a.alert_id = $1`,
+      [id]
+    );
+
+    if (alertResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+
+    const alert = alertResult.rows[0];
+
+    // Check access control
+    if (req.user.role !== 'ADMIN' && alert.owner_id !== req.user.user_id) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+
+    // Check valid state transition
+    if (alert.state === 'resolved') {
+      return res.status(409).json({ error: 'Cannot acknowledge resolved alert' });
+    }
+
+    if (alert.state === 'acked') {
+      return res.status(409).json({ error: 'Alert already acknowledged' });
+    }
+
+    const acknowledgedAt = nowISO();
+
+    // Update alert
+    await pool.query(
+      `UPDATE alerts 
+       SET state = 'acked', status = 'acknowledged', 
+           acknowledged_by = $1, acknowledged_at = $2, updated_at = $2
+       WHERE alert_id = $3`,
+      [actor, acknowledgedAt, id]
+    );
+
+    // Insert history
+    await pool.query(
+      `INSERT INTO alert_history (alert_id, action, actor, note, meta)
+       VALUES ($1, 'ack', $2, $3, $4)`,
+      [id, actor, note, JSON.stringify({ previous_state: alert.state })]
+    );
+
+    // Get updated alert
+    const updatedResult = await pool.query(
+      'SELECT * FROM alerts WHERE alert_id = $1',
+      [id]
+    );
+
+    broadcast('alert.acked', updatedResult.rows[0]);
+
+    console.log(`[alert/ack] Alert ${id} acknowledged by ${actor}`);
+
+    res.json({ 
+      state: 'acked',
+      status: 'acknowledged',
+      acknowledged_at: acknowledgedAt
+    });
+  } catch (error) {
+    console.error('[alert/:id/ack] Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/v1/alerts/:id/escalate
+app.post('/api/v1/alerts/:id/escalate', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { note = 'No response - escalating' } = req.body;
+    const actor = req.user.user_id;
+
+    // Get alert
+    const alertResult = await pool.query(
+      `SELECT a.*, h.owner_id FROM alerts a
+       JOIN houses h ON a.house_id = h.house_id
+       WHERE a.alert_id = $1`,
+      [id]
+    );
+
+    if (alertResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+
+    const alert = alertResult.rows[0];
+
+    // Check access control
+    if (req.user.role !== 'ADMIN' && alert.owner_id !== req.user.user_id) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+
+    // Check valid state transition
+    if (alert.state === 'resolved') {
+      return res.status(409).json({ error: 'Cannot escalate resolved alert' });
+    }
+
+    const escalatedAt = nowISO();
+    const escalationLevel = (alert.escalation_level || 0) + 1;
+
+    // Update alert
+    await pool.query(
+      `UPDATE alerts 
+       SET state = 'escalated', status = 'escalated', 
+           escalated_at = $1, escalation_level = $2, updated_at = $1
+       WHERE alert_id = $3`,
+      [escalatedAt, escalationLevel, id]
+    );
+
+    // Insert history
+    await pool.query(
+      `INSERT INTO alert_history (alert_id, action, actor, note, meta)
+       VALUES ($1, 'escalate', $2, $3, $4)`,
+      [id, actor, note, JSON.stringify({ escalation_level: escalationLevel, previous_state: alert.state })]
+    );
+
+    // Get updated alert
+    const updatedResult = await pool.query(
+      'SELECT * FROM alerts WHERE alert_id = $1',
+      [id]
+    );
+
+    broadcast('alert.escalated', updatedResult.rows[0]);
+
+    console.log(`[alert/escalate] Alert ${id} escalated to level ${escalationLevel} by ${actor}`);
+
+    res.json({ 
+      state: 'escalated',
+      escalation_level: escalationLevel,
+      escalated_at: escalatedAt
+    });
+  } catch (error) {
+    console.error('[alert/:id/escalate] Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/v1/alerts/:id/resolve
+app.post('/api/v1/alerts/:id/resolve', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { note } = req.body;
+    const actor = req.user.user_id;
+
+    if (!note) {
+      return res.status(400).json({ 
+        error: 'VALIDATION_ERROR',
+        details: ['Resolution note is required']
+      });
+    }
+
+    // Get alert
+    const alertResult = await pool.query(
+      `SELECT a.*, h.owner_id FROM alerts a
+       JOIN houses h ON a.house_id = h.house_id
+       WHERE a.alert_id = $1`,
+      [id]
+    );
+
+    if (alertResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+
+    const alert = alertResult.rows[0];
+
+    // Check access control
+    if (req.user.role !== 'ADMIN' && alert.owner_id !== req.user.user_id) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+
+    // Check if already resolved
+    if (alert.state === 'resolved') {
+      return res.status(409).json({ error: 'Alert already resolved' });
+    }
+
+    const resolvedAt = nowISO();
+
+    // Update alert
+    await pool.query(
+      `UPDATE alerts 
+       SET state = 'resolved', status = 'resolved', 
+           resolved_by = $1, resolved_at = $2, updated_at = $2
+       WHERE alert_id = $3`,
+      [actor, resolvedAt, id]
+    );
+
+    // Insert history
+    await pool.query(
+      `INSERT INTO alert_history (alert_id, action, actor, note, meta)
+       VALUES ($1, 'resolve', $2, $3, $4)`,
+      [id, actor, note, JSON.stringify({ resolution_note: note, previous_state: alert.state })]
+    );
+
+    // Get updated alert
+    const updatedResult = await pool.query(
+      'SELECT * FROM alerts WHERE alert_id = $1',
+      [id]
+    );
+
+    broadcast('alert.resolved', updatedResult.rows[0]);
+
+    console.log(`[alert/resolve] Alert ${id} resolved by ${actor}`);
+
+    res.json({ 
+      state: 'resolved',
+      status: 'resolved',
+      resolved_at: resolvedAt
+    });
+  } catch (error) {
+    console.error('[alert/:id/resolve] Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============ ANALYTICS ENDPOINTS ============
+
+// GET /api/v1/analytics/trends
+app.get('/api/v1/analytics/trends', authenticate, async (req, res) => {
+  try {
+    const { days = 30, groupBy = 'day', house_id, device_id } = req.query;
+    const startDate = new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000);
+
+    const trends = await analytics.getAlertTrends(pool, {
+      startDate,
+      endDate: new Date(),
+      groupBy,
+      houseId: house_id,
+      deviceId: device_id
+    });
+
+    res.json({ trends, period_days: parseInt(days) });
+  } catch (error) {
+    console.error('[analytics/trends] Error:', error);
+    res.status(500).json({ error: 'Failed to get trends' });
+  }
+});
+
+// GET /api/v1/analytics/device/:id/performance
+app.get('/api/v1/analytics/device/:id/performance', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { days = 30 } = req.query;
+
+    const performance = await analytics.getDevicePerformance(pool, id, parseInt(days));
+
+    if (!performance) {
+      return res.status(404).json({ error: 'No data found for device' });
+    }
+
+    res.json(performance);
+  } catch (error) {
+    console.error('[analytics/device/performance] Error:', error);
+    res.status(500).json({ error: 'Failed to get device performance' });
+  }
+});
+
+// GET /api/v1/analytics/response-times
+app.get('/api/v1/analytics/response-times', authenticate, async (req, res) => {
+  try {
+    const { days = 30, house_id } = req.query;
+    const startDate = new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000);
+
+    const metrics = await analytics.getResponseTimeMetrics(pool, {
+      startDate,
+      endDate: new Date(),
+      houseId: house_id
+    });
+
+    res.json({ metrics, period_days: parseInt(days) });
+  } catch (error) {
+    console.error('[analytics/response-times] Error:', error);
+    res.status(500).json({ error: 'Failed to get response time metrics' });
+  }
+});
+
+// GET /api/v1/analytics/patterns
+app.get('/api/v1/analytics/patterns', authenticate, async (req, res) => {
+  try {
+    const { days = 7, house_id, device_id } = req.query;
+
+    const patterns = await analytics.detectAlertPatterns(pool, {
+      days: parseInt(days),
+      houseId: house_id,
+      deviceId: device_id
+    });
+
+    res.json(patterns);
+  } catch (error) {
+    console.error('[analytics/patterns] Error:', error);
+    res.status(500).json({ error: 'Failed to detect patterns' });
+  }
+});
+
+// GET /api/v1/analytics/report
+app.get('/api/v1/analytics/report', authenticate, async (req, res) => {
+  try {
+    const { days = 30, house_id } = req.query;
+    const startDate = new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000);
+
+    let mlInferenceCollection = null;
+    try {
+      mlInferenceCollection = getMLInferenceCollection();
+    } catch (err) {
+      console.warn('[analytics/report] MongoDB not available');
+    }
+
+    const report = await analytics.generateAlertReport(pool, mlInferenceCollection, {
+      startDate,
+      endDate: new Date(),
+      houseId: house_id
+    });
+
+    res.json(report);
+  } catch (error) {
+    console.error('[analytics/report] Error:', error);
+    res.status(500).json({ error: 'Failed to generate report' });
+  }
+});
+
+// GET /api/v1/analytics/realtime
+app.get('/api/v1/analytics/realtime', authenticate, async (req, res) => {
+  try {
+    const stats = await analytics.getRealTimeStats(pool);
+    res.json(stats);
+  } catch (error) {
+    console.error('[analytics/realtime] Error:', error);
+    res.status(500).json({ error: 'Failed to get real-time stats' });
+  }
+});
+
+// ============ ML PIPELINE ENDPOINTS ============
+
+// GET /api/v1/ml/inference/history/:device_id
+app.get('/api/v1/ml/inference/history/:device_id', authenticate, async (req, res) => {
+  try {
+    const { device_id } = req.params;
+    const { limit = 100 } = req.query;
+
+    const mlInferenceCollection = getMLInferenceCollection();
+    const history = await mlPipeline.getDeviceInferenceHistory(
+      mlInferenceCollection,
+      device_id,
+      parseInt(limit)
+    );
+
+    res.json({ device_id, history, count: history.length });
+  } catch (error) {
+    console.error('[ml/inference/history] Error:', error);
+    res.status(500).json({ error: 'Failed to get inference history' });
+  }
+});
+
+// GET /api/v1/ml/model/accuracy
+app.get('/api/v1/ml/model/accuracy', authenticate, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+
+    const mlInferenceCollection = getMLInferenceCollection();
+    const accuracy = await mlPipeline.calculateModelAccuracy(
+      mlInferenceCollection,
+      pool,
+      parseInt(days)
+    );
+
+    res.json(accuracy);
+  } catch (error) {
+    console.error('[ml/model/accuracy] Error:', error);
+    res.status(500).json({ error: 'Failed to calculate model accuracy' });
+  }
+});
+
+// GET /api/v1/ml/model/performance
+app.get('/api/v1/ml/model/performance', authenticate, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+
+    const mlInferenceCollection = getMLInferenceCollection();
+    const trends = await mlPipeline.getModelPerformanceTrends(
+      mlInferenceCollection,
+      parseInt(days)
+    );
+
+    res.json({ trends, period_days: parseInt(days) });
+  } catch (error) {
+    console.error('[ml/model/performance] Error:', error);
+    res.status(500).json({ error: 'Failed to get model performance' });
+  }
+});
+
+// GET /api/v1/ml/model/drift
+app.get('/api/v1/ml/model/drift', authenticate, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const { window_days = 7 } = req.query;
+
+    const mlInferenceCollection = getMLInferenceCollection();
+    const drift = await mlPipeline.detectModelDrift(
+      mlInferenceCollection,
+      pool,
+      parseInt(window_days)
+    );
+
+    res.json(drift);
+  } catch (error) {
+    console.error('[ml/model/drift] Error:', error);
+    res.status(500).json({ error: 'Failed to detect model drift' });
+  }
+});
+
+// GET /api/v1/ml/features/importance
+app.get('/api/v1/ml/features/importance', authenticate, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+
+    const mlInferenceCollection = getMLInferenceCollection();
+    const analysis = await mlPipeline.analyzeFeatureImportance(
+      mlInferenceCollection,
+      parseInt(days)
+    );
+
+    res.json(analysis);
+  } catch (error) {
+    console.error('[ml/features/importance] Error:', error);
+    res.status(500).json({ error: 'Failed to analyze feature importance' });
+  }
+});
+
+// POST /api/v1/ml/training-data/prepare
+app.post('/api/v1/ml/training-data/prepare', authenticate, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const { days = 90, min_score = 0.5, include_features = true } = req.body;
+    const startDate = new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000);
+
+    const mlInferenceCollection = getMLInferenceCollection();
+    const trainingData = await mlPipeline.prepareTrainingData(
+      mlInferenceCollection,
+      pool,
+      {
+        startDate,
+        endDate: new Date(),
+        minScore: parseFloat(min_score),
+        includeFeatures: include_features
+      }
+    );
+
+    res.json(trainingData);
+  } catch (error) {
+    console.error('[ml/training-data/prepare] Error:', error);
+    res.status(500).json({ error: 'Failed to prepare training data' });
+  }
+});
+
+// GET /api/v1/ml/data/export
+app.get('/api/v1/ml/data/export', authenticate, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const { days = 30, format = 'json' } = req.query;
+    const startDate = new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000);
+
+    const mlInferenceCollection = getMLInferenceCollection();
+    const exportData = await mlPipeline.exportMLData(
+      mlInferenceCollection,
+      pool,
+      {
+        startDate,
+        endDate: new Date(),
+        format
+      }
+    );
+
+    if (format === 'csv') {
+      // Return as CSV file
+      const csvRows = [exportData.headers.join(',')];
+      exportData.rows.forEach(row => {
+        csvRows.push(row.map(val => `"${val}"`).join(','));
+      });
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="ml-data-${new Date().toISOString().split('T')[0]}.csv"`);
+      res.send(csvRows.join('\n'));
+    } else {
+      res.json(exportData);
+    }
+  } catch (error) {
+    console.error('[ml/data/export] Error:', error);
+    res.status(500).json({ error: 'Failed to export ML data' });
   }
 });
 

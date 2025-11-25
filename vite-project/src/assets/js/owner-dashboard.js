@@ -1744,3 +1744,150 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   initPage();
 });
+
+
+// ============================================
+// FEATURE INTEGRATION: Charts, Search, Export
+// ============================================
+
+// Initialize advanced features
+import { initCharts } from './charts.js';
+import { initSearchFilter } from './search-filter.js';
+import { initExportSystem } from './export-reports.js';
+
+// Initialize chart system
+const chartManager = initCharts();
+
+// Initialize search & filter for alert history
+let searchFilterSystem = null;
+
+// Listen for section changes to initialize search when needed
+document.addEventListener('DOMContentLoaded', () => {
+  const navItems = document.querySelectorAll('.nav-item');
+  
+  navItems.forEach(item => {
+    item.addEventListener('click', async () => {
+      const section = item.dataset.section;
+      
+      // Initialize search/filter when alert history section is shown
+      if (section === 'alert-history' && !searchFilterSystem) {
+        // Fetch alert history data
+        try {
+          const searchParams = { limit: 100 };
+          if (window.currentTenant?.tenant_id) {
+            searchParams.tenant_id = window.currentTenant.tenant_id;
+          }
+          
+          const response = await post('/api/v1/alerts/search', searchParams);
+          const alerts = response.items || [];
+          
+          // Transform alerts for search
+          const searchData = alerts.map(alert => ({
+            id: alert.id,
+            timestamp: new Date(alert.ts || alert.created_at).toLocaleString(),
+            alert: alert.type.replace(/_/g, ' ').toUpperCase(),
+            device: alert.device_id,
+            severity: alert.severity,
+            status: alert.status,
+            message: alert.message || '',
+            type: alert.type
+          }));
+          
+          // Store for export
+          window.alertHistoryData = searchData;
+          
+          // Initialize search/filter
+          searchFilterSystem = initSearchFilter(
+            searchData,
+            ['alert', 'device', 'severity', 'status', 'message', 'type']
+          );
+          
+          // Listen for search results
+          document.addEventListener('searchResults', (e) => {
+            updateHistoryTable(e.detail);
+          });
+          
+        } catch (err) {
+          console.error('[owner] Failed to initialize search:', err);
+        }
+      }
+    });
+  });
+});
+
+// Update history table with search results
+function updateHistoryTable(results) {
+  const historyTable = document.querySelector('#historyTable tbody');
+  if (!historyTable) return;
+  
+  historyTable.innerHTML = '';
+  
+  if (results.length === 0) {
+    historyTable.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #666;">No results found</td></tr>';
+    return;
+  }
+  
+  results.forEach((alert) => {
+    const tr = document.createElement('tr');
+    
+    // Severity badge colors
+    const severityColors = {
+      'critical': 'danger',
+      'high': 'warning',
+      'medium': 'info',
+      'low': 'success'
+    };
+    const severityBadge = severityColors[alert.severity] || 'info';
+    
+    // Status badge colors
+    const statusColors = {
+      'resolved': 'success',
+      'acknowledged': 'info',
+      'open': 'warning',
+      'escalated': 'danger'
+    };
+    const statusBadge = statusColors[alert.status] || 'warning';
+    
+    tr.innerHTML = `
+      <td style="white-space: nowrap;">${alert.timestamp}</td>
+      <td><strong>${alert.alert}</strong><br><small style="color: #666;">${alert.message || 'No description'}</small></td>
+      <td><code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px; font-size: 0.85em;">${alert.device}</code></td>
+      <td><span class="badge ${severityBadge}">${alert.severity.toUpperCase()}</span></td>
+      <td><span class="badge ${statusBadge}">${alert.status.charAt(0).toUpperCase() + alert.status.slice(1)}</span></td>
+    `;
+    tr.style.cursor = 'pointer';
+    tr.addEventListener('click', () => {
+      window.location.href = `alert-detail.html?id=${alert.id}`;
+    });
+    historyTable.appendChild(tr);
+  });
+}
+
+// Initialize export system
+const { exportManager } = initExportSystem();
+
+// Store chart data for export
+window.alertTrendsData = [];
+
+// Update alert trends data when chart is rendered
+async function updateAlertTrendsData() {
+  try {
+    const tenantId = window.currentTenant?.tenant_id;
+    const url = tenantId ? `/api/v1/alerts/weekly-trends?tenant_id=${tenantId}` : '/api/v1/alerts/weekly-trends';
+    const response = await get(url);
+    const trends = response.trends || [];
+    
+    window.alertTrendsData = trends.map(t => ({
+      Day: t.day,
+      Date: t.date,
+      'Alert Count': t.count
+    }));
+  } catch (err) {
+    console.error('[owner] Failed to load trends for export:', err);
+  }
+}
+
+// Call this after chart is rendered
+setTimeout(updateAlertTrendsData, 1000);
+
+console.log('[owner] Advanced features initialized: Charts, Search, Export');

@@ -1,0 +1,896 @@
+/* ============================================
+   ADMIN DASHBOARD - Premium Professional Design
+   ============================================ */
+
+/* Import Design System */
+@import url('design-system.css');
+
+/* Use base owner dashboard styles */
+@import url('owner-dashboard.css');
+
+/* ============================================
+   ADMIN-SPECIFIC PREMIUM STYLING
+   ============================================ */
+
+/* Premium Dark Header for Admin */
+.admin-body .header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.admin-body .header-title h1,
+.admin-body .header-subtitle {
+    color: white;
+}
+
+.admin-body .header-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.admin-body .logo {
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.admin-body .notification-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.admin-body .notification-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.admin-body .user-info {
+    color: white;
+}
+
+.admin-body .user-info:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-body .avatar {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.admin-body .user-name {
+    color: white;
+}
+
+.admin-body .user-role {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Admin Navigation with Dark Theme */
+.admin-body .nav-bar {
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.admin-body .nav-item {
+    color: var(--gray-600);
+}
+
+.admin-body .nav-item.active {
+    color: #f59e0b;
+    border-bottom-color: #f59e0b;
+}
+
+.admin-body .nav-item:hover {
+    color: #d97706;
+}
+
+/* Premium KPI Cards for Admin */
+.admin-body .kpi-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-body .kpi-card::before {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.admin-body .kpi-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* System Health Indicators */
+.system-health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.health-indicator {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    transition: all var(--transition-base);
+}
+
+.health-indicator:hover {
+    border-color: var(--success);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+    transform: translateY(-2px);
+}
+
+.health-indicator.warning {
+    border-color: var(--warning);
+}
+
+.health-indicator.warning:hover {
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+}
+
+.health-indicator.error {
+    border-color: var(--error);
+}
+
+.health-indicator.error:hover {
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
+}
+
+.health-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-2xl);
+    flex-shrink: 0;
+}
+
+.health-indicator.success .health-icon {
+    background: var(--success-light);
+    color: var(--success-dark);
+}
+
+.health-indicator.warning .health-icon {
+    background: var(--warning-light);
+    color: var(--warning-dark);
+}
+
+.health-indicator.error .health-icon {
+    background: var(--error-light);
+    color: var(--error-dark);
+}
+
+.health-details {
+    flex: 1;
+}
+
+.health-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--gray-700);
+    margin-bottom: var(--space-1);
+}
+
+.health-value {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--gray-900);
+}
+
+.health-meta {
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+    margin-top: var(--space-1);
+}
+
+/* Premium Stat Boxes */
+.admin-body .stat-box {
+    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+    border: 1px solid var(--gray-200);
+    transition: all var(--transition-base);
+}
+
+.admin-body .stat-box:hover {
+    background: white;
+    border-color: #f59e0b;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Tenant Management Cards */
+.tenant-card {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.tenant-card:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 12px 32px rgba(245, 158, 11, 0.15);
+    transform: translateY(-4px);
+}
+
+.tenant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: var(--space-4);
+}
+
+.tenant-name {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-1);
+}
+
+.tenant-id {
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+    font-family: var(--font-mono);
+}
+
+.tenant-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--gray-100);
+}
+
+.tenant-stat {
+    text-align: center;
+}
+
+.tenant-stat-value {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--gray-900);
+    display: block;
+}
+
+.tenant-stat-label {
+    font-size: var(--text-xs);
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    margin-top: var(--space-1);
+}
+
+/* ML Model Cards */
+.model-card {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    transition: all var(--transition-base);
+}
+
+.model-card:hover {
+    border-color: var(--primary-300);
+    box-shadow: 0 12px 32px rgba(59, 130, 246, 0.15);
+    transform: translateY(-4px);
+}
+
+.model-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: var(--space-4);
+}
+
+.model-name {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--gray-900);
+}
+
+.model-version {
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+    font-family: var(--font-mono);
+}
+
+.model-accuracy {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-extrabold);
+    color: var(--success);
+    text-align: center;
+    margin: var(--space-4) 0;
+}
+
+.model-meta {
+    display: flex;
+    justify-content: space-between;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--gray-100);
+    font-size: var(--text-sm);
+    color: var(--gray-600);
+}
+
+/* Audit Log Table Enhancement */
+.admin-body .table tbody tr {
+    transition: all var(--transition-fast);
+}
+
+.admin-body .table tbody tr:hover {
+    background: linear-gradient(90deg, #fef3c7 0%, transparent 100%);
+    transform: translateX(4px);
+}
+
+/* System Settings Modal Enhancement */
+.admin-body .modal-content {
+    max-width: 700px;
+}
+
+.admin-body .modal-content h2 {
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* Premium Action Buttons */
+.admin-body .action-btn.emergency {
+    background: linear-gradient(135deg, var(--error) 0%, var(--error-dark) 100%);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.admin-body .action-btn.emergency:hover {
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+}
+
+/* AWS Services Status Cards */
+.service-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--space-4);
+}
+
+.service-card {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-left: 4px solid var(--success);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    transition: all var(--transition-base);
+}
+
+.service-card:hover {
+    border-left-color: var(--primary-500);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.service-card.warning {
+    border-left-color: var(--warning);
+}
+
+.service-card.error {
+    border-left-color: var(--error);
+}
+
+.service-name {
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
+.service-metrics {
+    font-size: var(--text-sm);
+    color: var(--gray-600);
+    margin-top: var(--space-2);
+}
+
+/* Premium Panel Styling for Admin */
+.admin-body .panel {
+    background: white;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.admin-body .panel:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .system-health-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tenant-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .service-status-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* ============================================
+   ADMIN DASHBOARD ENHANCEMENTS
+   ============================================ */
+
+/* Admin-specific grid layouts */
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-6);
+    margin: var(--space-6) 0;
+}
+
+.admin-section-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+}
+
+.admin-section-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.admin-section-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-3xl);
+    margin-bottom: var(--space-4);
+    background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+}
+
+.admin-section-title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
+.admin-section-description {
+    font-size: var(--text-sm);
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin-bottom: var(--space-4);
+}
+
+.admin-section-stats {
+    display: flex;
+    gap: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--gray-100);
+}
+
+.admin-stat {
+    flex: 1;
+}
+
+.admin-stat-value {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--primary-600);
+}
+
+.admin-stat-label {
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+}
+
+/* System Health Indicators */
+.health-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+}
+
+.health-indicator.healthy {
+    background: var(--success-light);
+    color: var(--success-dark);
+}
+
+.health-indicator.warning {
+    background: var(--warning-light);
+    color: var(--warning-dark);
+}
+
+.health-indicator.critical {
+    background: var(--error-light);
+    color: var(--error-dark);
+}
+
+.health-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.health-indicator.healthy .health-dot {
+    background: var(--success);
+}
+
+.health-indicator.warning .health-dot {
+    background: var(--warning);
+}
+
+.health-indicator.critical .health-dot {
+    background: var(--error);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* ML Model Cards */
+.model-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+}
+
+.model-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-300);
+}
+
+.model-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+}
+
+.model-name {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--gray-900);
+}
+
+.model-version {
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+    font-family: var(--font-mono);
+}
+
+.model-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+    margin: var(--space-4) 0;
+}
+
+.model-metric {
+    text-align: center;
+    padding: var(--space-3);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+}
+
+.model-metric-value {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--primary-600);
+}
+
+.model-metric-label {
+    font-size: var(--text-xs);
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    margin-top: var(--space-1);
+}
+
+/* Tenant Management */
+.tenant-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.tenant-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--primary-300);
+}
+
+.tenant-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+}
+
+.tenant-name {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--gray-900);
+}
+
+.tenant-id {
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+    font-family: var(--font-mono);
+}
+
+.tenant-stats {
+    display: flex;
+    gap: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--gray-100);
+}
+
+.tenant-stat {
+    flex: 1;
+    text-align: center;
+}
+
+.tenant-stat-value {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--gray-900);
+}
+
+.tenant-stat-label {
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+}
+
+/* Audit Log Styling */
+.log-entry {
+    padding: var(--space-4);
+    border-left: 3px solid var(--gray-300);
+    margin-bottom: var(--space-3);
+    background: var(--gray-50);
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    transition: all var(--transition-fast);
+}
+
+.log-entry:hover {
+    background: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.log-entry.success {
+    border-left-color: var(--success);
+}
+
+.log-entry.error {
+    border-left-color: var(--error);
+}
+
+.log-entry.warning {
+    border-left-color: var(--warning);
+}
+
+.log-timestamp {
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+    font-family: var(--font-mono);
+}
+
+.log-action {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--gray-900);
+    margin: var(--space-1) 0;
+}
+
+.log-details {
+    font-size: var(--text-sm);
+    color: var(--gray-600);
+}
+
+/* System Metrics Dashboard */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-4);
+    margin: var(--space-6) 0;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, white 0%, var(--gray-50) 100%);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+}
+
+.metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-2xl);
+    background: var(--primary-50);
+    margin-bottom: var(--space-3);
+}
+
+.metric-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    margin-bottom: var(--space-2);
+}
+
+.metric-value {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    color: var(--gray-900);
+    line-height: 1;
+}
+
+.metric-change {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    margin-top: var(--space-2);
+}
+
+.metric-change.positive {
+    color: var(--success);
+}
+
+.metric-change.negative {
+    color: var(--error);
+}
+
+/* Responsive Admin Dashboard */
+@media (max-width: 1024px) {
+    .admin-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    
+    .metrics-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-grid,
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .model-metrics {
+        grid-template-columns: 1fr;
+    }
+    
+    .tenant-stats {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+}
+
+
+/* ============================================
+   DARK MODE ENHANCEMENTS FOR ADMIN DASHBOARD
+   ============================================ */
+
+[data-theme="dark"] .admin-body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+[data-theme="dark"] .metric-card {
+    background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+    border-color: rgba(71, 85, 105, 0.3);
+}
+
+[data-theme="dark"] .metric-label {
+    color: var(--gray-400);
+}
+
+[data-theme="dark"] .metric-value {
+    color: var(--gray-100);
+}
+
+[data-theme="dark"] .metric-icon {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+[data-theme="dark"] .log-entry {
+    background: var(--dark-bg-tertiary);
+}
+
+[data-theme="dark"] .log-entry:hover {
+    background: var(--dark-bg-secondary);
+}
+
+[data-theme="dark"] .log-action {
+    color: var(--gray-100);
+}
+
+[data-theme="dark"] .log-details {
+    color: var(--gray-400);
+}
+
+[data-theme="dark"] .log-timestamp {
+    color: var(--gray-500);
+}
+
+
+/* ============================================
+   ADMIN DASHBOARD - CONSISTENT THEME
+   ============================================ */
+
+.admin-body.owner-body {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+}
+
+.admin-body.owner-body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 300px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+[data-theme="dark"] .admin-body.owner-body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+[data-theme="dark"] .admin-body.owner-body::before {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+}

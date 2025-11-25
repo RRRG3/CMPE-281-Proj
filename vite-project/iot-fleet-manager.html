@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IoT Fleet Manager - Smart Home Senior Care</title>
+    <title>IoT Fleet Manager - Smart Home Care</title>
     <link rel="stylesheet" href="/src/assets/css/base.css">
     <link rel="stylesheet" href="/src/assets/css/iot-fleet.css">
 </head>
 <body class="iot-body">
     <header class="header">
         <div class="header-left">
-            <a class="logo" href="home.html">🔧</a>
+            <a class="logo" href="home.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 32px; height: 32px; color: var(--primary-600);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+            </a>
             <div class="header-title">
                 <h1>IoT Fleet Management Dashboard</h1>
                 <div class="header-subtitle">Device Registry &amp; Network Operations</div>
@@ -24,16 +26,28 @@
                     <div class="user-role">Technical Operations</div>
                 </div>
             </div>
-            <button class="btn btn-secondary" id="openCommandCenter">Command Center</button>
         </div>
     </header>
 
     <main class="content">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <div class="breadcrumb-item">
+                <a href="home.html" class="breadcrumb-link">Home</a>
+                <span class="breadcrumb-separator">›</span>
+            </div>
+            <div class="breadcrumb-item">
+                <span class="breadcrumb-current">IoT Fleet Manager</span>
+            </div>
+        </nav>
+        
         <section class="section" data-section="overview">
             <div class="kpi-grid" id="iotKpiGrid"></div>
             <article class="panel">
                 <div class="panel-header">
-                    <div class="panel-title">📋 Device Fleet Status &amp; Registry</div>
+                    <div class="panel-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                        Device Fleet Status &amp; Registry
+                    </div>
                     <div class="panel-actions">
                         <button class="btn btn-secondary" data-action="filter">Filter</button>
                         <button class="btn btn-secondary" data-action="export">Export CSV</button>
@@ -61,25 +75,35 @@
             <div class="grid-2col">
                 <article class="panel">
                     <div class="panel-header">
-                        <div class="panel-title">📡 MQTT Network Health (AWS IoT Core)</div>
+                        <div class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>
+                            MQTT Network Health (AWS IoT Core)
+                        </div>
                     </div>
                     <div class="stats-grid" id="networkStats"></div>
                     <div class="chart-placeholder" style="padding: 2rem; text-align: center; background: #f8f9fa; border-radius: 8px; margin-top: 1rem;">
-                        📊 Real-time MQTT Throughput Chart<br>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 32px; height: 32px; display: inline-block; margin-bottom: 8px; color: var(--primary-600);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg><br>
+                        Real-time MQTT Throughput Chart<br>
                         <span style="font-size: 0.9em; color: #666;">(Available after AWS IoT Core deployment)</span><br>
                         <small style="color: #999;">This chart will show live MQTT message throughput from CloudWatch Metrics once deployed to AWS</small>
                     </div>
                 </article>
                 <article class="panel">
                     <div class="panel-header">
-                        <div class="panel-title">🔄 Firmware OTA Update Status</div>
+                        <div class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            Firmware OTA Update Status
+                        </div>
                     </div>
                     <p style="font-size: 0.9em; color: #666; margin: 0.5rem 0;">
                         Over-The-Air firmware updates allow remote device upgrades without physical access. 
                         This feature uses AWS IoT Jobs for staged rollouts.
                     </p>
                     <div class="update-list" id="firmwareQueue"></div>
-                    <button class="btn btn-primary" data-action="schedule-ota">📅 Schedule OTA Update Batch</button>
+                    <button class="btn btn-primary" data-action="schedule-ota">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 6px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        Schedule OTA Update Batch
+                    </button>
                 </article>
             </div>
         </section>
@@ -242,6 +266,7 @@
         </form>
     </dialog>
 
+    <script type="module" src="/src/assets/js/dark-mode.js"></script>
     <script type="module" src="/src/assets/js/toast.js"></script>
     <script type="module" src="/src/assets/js/iot-fleet.js"></script>
 </body>

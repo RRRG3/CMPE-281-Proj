@@ -1,4 +1,7 @@
 import { post, get, detectBackend } from './api.js';
+import { SkeletonLoader } from './skeleton.js';
+import wsClient from './websocket-client.js';
+import { CloudVisualizer, MatrixLogStream } from './cloud-viz.js';
 
 // Get API_BASE dynamically
 async function getAPIBase() {
@@ -13,6 +16,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const weeklyStats = document.getElementById('weeklyStats');
   const toast = window.showToast || (() => {});
 
+  // Show skeletons
+  if (alertList) SkeletonLoader.show('alertList', 'list');
+  if (kpiGrid) SkeletonLoader.show('kpiGrid', 'card');
+
   // Fetch real alerts from backend
   let alerts = [];
   try {
@@ -20,6 +27,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     alerts = response.items || [];
   } catch (err) {
     console.error('Failed to load alerts:', err);
+  } finally {
+    if (alertList) SkeletonLoader.hide('alertList');
+    if (kpiGrid) SkeletonLoader.hide('kpiGrid');
   }
 
   // Calculate KPIs from real data
@@ -151,6 +161,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   function initNav() {
     const navItems = document.querySelectorAll('.nav-item');
     const sections = document.querySelectorAll('.section');
+    
+    // Cloud Viz initialization flag
+    let cloudVizInitialized = false;
+
     navItems.forEach((button) => {
       button.addEventListener('click', () => {
         const target = button.dataset.section;
@@ -158,8 +172,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         sections.forEach((section) => {
           section.classList.toggle('hidden', section.dataset.section !== target);
         });
+
+        // Initialize "Cool" Visualizations when System Health is opened
+        if (target === 'system-health' && !cloudVizInitialized) {
+            cloudVizInitialized = true;
+            // Short delay to allow layout to stabilize
+            setTimeout(() => {
+                new CloudVisualizer('cloudViz');
+                new MatrixLogStream('matrixLogs');
+                startSystemHealthUpdates();
+            }, 100);
+        }
       });
     });
+  }
+
+  function startSystemHealthUpdates() {
+    const tbody = document.querySelector('#awsStatusTable tbody');
+    if (!tbody) return;
+
+    const services = [
+        { name: '🌐 API Gateway', region: 'us-west-2', metric: 'req/min', base: 1200, var: 200 },
+        { name: '🗄️ RDS PostgreSQL', region: 'us-west-2', metric: 'conn', base: 45, var: 10 },
+        { name: '📡 IoT Core', region: 'us-west-2', metric: 'devices', base: 340, var: 5 },
+        { name: '⚡ Lambda', region: 'us-west-2', metric: 'invoc', base: 500, var: 100 },
+        { name: '📦 S3 Storage', region: 'us-west-2', metric: 'GB', base: 2.3, var: 0.1 }
+    ];
+
+    const update = () => {
+        tbody.innerHTML = services.map(s => {
+            const val = s.base + (Math.random() * s.var - s.var/2);
+            const valueStr = s.metric === 'GB' ? val.toFixed(2) : Math.floor(val);
+            
+            return `
+                <tr>
+                    <td>${s.name}</td>
+                    <td><span class="badge success">Operational</span></td>
+                    <td>${s.region}</td>
+                    <td>${valueStr} ${s.metric}</td>
+                    <td>Just now</td>
+                </tr>
+            `;
+        }).join('');
+    };
+
+    update();
+    setInterval(update, 2000);
   }
 
   function initQuickActions() {
@@ -614,6 +672,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   initHeaderActions();
   initTabButtons();
   initForms();
+
+  // Connect WebSocket
+  wsClient.connect('admin', 'all');
+  wsClient.on('alert.new', (data) => {
+    // Show toast
+    const toast = window.showToast || console.log;
+    toast(`🚨 New Alert: ${data.payload.type} (${data.payload.severity})`, 'warning');
+    
+    // Prepend to list
+    alerts.unshift(data.payload);
+    renderAlerts();
+    
+    // Update KPIs (simplified)
+    const todayKpi = kpis.find(k => k.label === 'Alerts Today');
+    if (todayKpi) {
+        todayKpi.value = (parseInt(todayKpi.value) + 1).toString();
+        renderKpis();
+    }
+  });
 
   console.log('[ADMIN DASHBOARD] Loaded with', alerts.length, 'alerts');
 });

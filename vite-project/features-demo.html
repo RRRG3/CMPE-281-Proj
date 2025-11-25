@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Features Demo - Smart Home Care</title>
+    <link rel="stylesheet" href="/src/assets/css/base.css">
+    <link rel="stylesheet" href="/src/assets/css/owner-dashboard.css">
+    <style>
+        .demo-section {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .demo-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary-600);
+        }
+        .demo-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        .feature-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--primary-100);
+            color: var(--primary-700);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="owner-body">
+    <header class="header">
+        <div class="header-left">
+            <a class="logo" href="home.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 32px; height: 32px; color: var(--primary-600);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </a>
+            <div class="header-title">
+                <h1>Advanced Features Demo</h1>
+                <div class="header-subtitle">Charts, Search & Export Showcase</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <a href="owner-dashboard.html" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    </header>
+
+    <main class="content" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+        <!-- Feature Overview -->
+        <div class="demo-section">
+            <h2 class="demo-title">🚀 Three Powerful Features</h2>
+            <p class="demo-description">
+                Your dashboard now includes three professional-grade features to enhance data visualization, 
+                search capabilities, and reporting functionality.
+            </p>
+            <div>
+                <span class="feature-badge">📊 Live Charts & Visualization</span>
+                <span class="feature-badge">🔍 Advanced Search & Filtering</span>
+                <span class="feature-badge">📥 Export & Reporting</span>
+            </div>
+        </div>
+
+        <!-- Feature 1: Charts -->
+        <div class="demo-section">
+            <h2 class="demo-title">📊 Feature 1: Live Charts & Data Visualization</h2>
+            <p class="demo-description">
+                Beautiful, animated charts powered by Chart.js. Supports line charts, bar charts, doughnut charts, 
+                and sparklines for KPI cards.
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                <!-- Line Chart -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Weekly Alert Trends</div>
+                    </div>
+                    <canvas id="demoLineChart" style="max-height: 300px;"></canvas>
+                </div>
+
+                <!-- Doughnut Chart -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Alert Severity Distribution</div>
+                    </div>
+                    <canvas id="demoDoughnutChart" style="max-height: 300px;"></canvas>
+                </div>
+
+                <!-- Bar Chart -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Alert Types Breakdown</div>
+                    </div>
+                    <canvas id="demoBarChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding: 1rem; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
+                <strong>✨ Features:</strong>
+                <ul style="margin: 0.5rem 0 0 1.5rem; color: #1e40af;">
+                    <li>Smooth animations and transitions</li>
+                    <li>Interactive tooltips with detailed information</li>
+                    <li>Responsive design that adapts to screen size</li>
+                    <li>Professional color schemes and gradients</li>
+                    <li>Real-time data updates</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Feature 2: Search & Filter -->
+        <div class="demo-section">
+            <h2 class="demo-title">🔍 Feature 2: Advanced Search & Filtering</h2>
+            <p class="demo-description">
+                Powerful search with autocomplete, filter chips, saved presets, and search history. 
+                Debounced search for optimal performance.
+            </p>
+
+            <!-- Search Demo -->
+            <div id="searchFilterContainer" style="margin: 1.5rem 0;"></div>
+
+            <div class="panel" style="margin-top: 1.5rem;">
+                <div class="panel-header">
+                    <div class="panel-title">Sample Data Table</div>
+                </div>
+                <table class="table" id="demoTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding: 1rem; background: #f0fdf4; border-left: 4px solid #10b981; border-radius: 8px;">
+                <strong>✨ Features:</strong>
+                <ul style="margin: 0.5rem 0 0 1.5rem; color: #065f46;">
+                    <li>Real-time search with 300ms debounce</li>
+                    <li>Search suggestions from history</li>
+                    <li>Multiple filter support with visual chips</li>
+                    <li>Nested object property search</li>
+                    <li>Save and load filter presets</li>
+                    <li>LocalStorage persistence</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Feature 3: Export & Reports -->
+        <div class="demo-section">
+            <h2 class="demo-title">📥 Feature 3: Export & Reporting</h2>
+            <p class="demo-description">
+                Export data in multiple formats: CSV, Excel, PDF, JSON, or print directly. 
+                Generate professional HTML reports with statistics.
+            </p>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Sample Export Data</div>
+                    <div class="panel-actions">
+                        <button class="btn btn-secondary" data-export="csv" data-export-source="demoExportData">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            Export CSV
+                        </button>
+                        <button class="btn btn-secondary" data-export="excel" data-export-source="demoExportData">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            Export Excel
+                        </button>
+                        <button class="btn btn-secondary" data-export="pdf" data-export-source="demoExportData">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                            Export PDF
+                        </button>
+                        <button class="btn btn-secondary" data-export="print" data-export-source="demoExportData">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                            Print
+                        </button>
+                    </div>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Device ID</th>
+                            <th>Location</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Last Seen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>DEV-001</td>
+                            <td>Living Room</td>
+                            <td>Camera</td>
+                            <td><span class="badge success">Online</span></td>
+                            <td>2 minutes ago</td>
+                        </tr>
+                        <tr>
+                            <td>DEV-002</td>
+                            <td>Bedroom</td>
+                            <td>Motion Sensor</td>
+                            <td><span class="badge success">Online</span></td>
+                            <td>5 minutes ago</td>
+                        </tr>
+                        <tr>
+                            <td>DEV-003</td>
+                            <td>Kitchen</td>
+                            <td>Audio Sensor</td>
+                            <td><span class="badge warning">Offline</span></td>
+                            <td>1 hour ago</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px;">
+                <strong>✨ Features:</strong>
+                <ul style="margin: 0.5rem 0 0 1.5rem; color: #92400e;">
+                    <li>Multiple export formats (CSV, Excel, PDF, JSON)</li>
+                    <li>Professional PDF generation with tables and styling</li>
+                    <li>HTML report generation with statistics</li>
+                    <li>Print-friendly layouts</li>
+                    <li>Automatic file downloads</li>
+                    <li>Report scheduling (coming soon)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Integration Info -->
+        <div class="demo-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h2 class="demo-title" style="color: white;">🎯 Where to Find These Features</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">📊 Charts</h3>
+                    <p style="margin: 0; opacity: 0.9;">
+                        • Owner Dashboard → Weekly Alert Trends<br>
+                        • Admin Dashboard → System Metrics<br>
+                        • Reports Section → Analytics Charts
+                    </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">🔍 Search & Filter</h3>
+                    <p style="margin: 0; opacity: 0.9;">
+                        • Alert History Section<br>
+                        • Admin Audit Logs<br>
+                        • Device Management<br>
+                        • Tenant Management
+                    </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">📥 Export</h3>
+                    <p style="margin: 0; opacity: 0.9;">
+                        • All data tables have export buttons<br>
+                        • Charts can be exported as images<br>
+                        • Reports can be printed or saved as PDF
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script type="module" src="/src/assets/js/toast.js"></script>
+    <script type="module" src="/src/assets/js/charts.js"></script>
+    <script type="module" src="/src/assets/js/search-filter.js"></script>
+    <script type="module" src="/src/assets/js/export-reports.js"></script>
+    <script type="module">
+        import { ChartManager, sampleData } from './src/assets/js/charts.js';
+        import { initSearchFilter } from './src/assets/js/search-filter.js';
+        import { initExportSystem } from './src/assets/js/export-reports.js';
+
+        // Initialize features
+        const chartManager = new ChartManager();
+        const { exportManager } = initExportSystem();
+
+        // Wait for Chart.js to load
+        setTimeout(() => {
+            // Create demo charts
+            chartManager.createLineChart('demoLineChart', sampleData.alertTrends);
+            chartManager.createDoughnutChart('demoDoughnutChart', sampleData.severityDistribution);
+            chartManager.createBarChart('demoBarChart', {
+                labels: ['Fall', 'Glass Break', 'Smoke', 'No Motion', 'Door Open'],
+                datasets: [{
+                    label: 'Alert Count',
+                    data: [45, 32, 18, 25, 12],
+                    backgroundColor: [
+                        '#3b82f6',
+                        '#8b5cf6',
+                        '#ec4899',
+                        '#f59e0b',
+                        '#10b981'
+                    ]
+                }]
+            });
+        }, 500);
+
+        // Sample data for search demo
+        const sampleTableData = [
+            { id: 'A001', name: 'Device Alpha', category: 'Sensor', status: 'Active', date: '2025-11-20' },
+            { id: 'B002', name: 'Device Beta', category: 'Camera', status: 'Active', date: '2025-11-19' },
+            { id: 'C003', name: 'Device Gamma', category: 'Sensor', status: 'Inactive', date: '2025-11-18' },
+            { id: 'D004', name: 'Device Delta', category: 'Audio', status: 'Active', date: '2025-11-17' },
+            { id: 'E005', name: 'Device Epsilon', category: 'Camera', status: 'Maintenance', date: '2025-11-16' },
+        ];
+
+        // Initialize search & filter
+        const { manager, ui } = initSearchFilter(sampleTableData, ['id', 'name', 'category', 'status', 'date']);
+
+        // Render initial table
+        renderTable(sampleTableData);
+
+        // Listen for search results
+        document.addEventListener('searchResults', (e) => {
+            renderTable(e.detail);
+        });
+
+        function renderTable(data) {
+            const tbody = document.querySelector('#demoTable tbody');
+            tbody.innerHTML = '';
+            
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                const statusClass = row.status === 'Active' ? 'success' : row.status === 'Inactive' ? 'danger' : 'warning';
+                tr.innerHTML = `
+                    <td><code>${row.id}</code></td>
+                    <td>${row.name}</td>
+                    <td>${row.category}</td>
+                    <td><span class="badge ${statusClass}">${row.status}</span></td>
+                    <td>${row.date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Prepare export data
+        window.demoExportData = [
+            { 'Device ID': 'DEV-001', 'Location': 'Living Room', 'Type': 'Camera', 'Status': 'Online', 'Last Seen': '2 minutes ago' },
+            { 'Device ID': 'DEV-002', 'Location': 'Bedroom', 'Type': 'Motion Sensor', 'Status': 'Online', 'Last Seen': '5 minutes ago' },
+            { 'Device ID': 'DEV-003', 'Location': 'Kitchen', 'Type': 'Audio Sensor', 'Status': 'Offline', 'Last Seen': '1 hour ago' }
+        ];
+
+        console.log('✅ Demo page loaded with all three features!');
+    </script>
+</body>
+</html>

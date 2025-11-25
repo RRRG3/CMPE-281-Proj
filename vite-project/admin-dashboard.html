@@ -3,22 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Smart Home Senior Care</title>
+    <title>Admin Dashboard - Smart Home Care Cloud</title>
+    <meta name="description" content="Cloud Service Administration - System Operations, Tenant Management, ML Models">
     <link rel="stylesheet" href="/src/assets/css/base.css">
-    <link rel="stylesheet" href="/src/assets/css/owner-dashboard.css">
+    <link rel="stylesheet" href="/src/assets/css/admin-dashboard.css">
+    <link rel="stylesheet" href="/src/assets/css/command-palette.css">
+    <link rel="stylesheet" href="/src/assets/css/cloud-viz.css">
 </head>
-<body class="owner-body">
+<body class="admin-body owner-body">
     <div class="header">
         <div class="header-left">
-            <a class="logo" href="home.html" title="Back to home">⚙️</a>
+            <button class="mobile-menu-button" id="mobileMenuButton" aria-label="Open menu" aria-expanded="false">
+                <div class="hamburger-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+            <a class="logo" href="home.html" title="Back to home">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 32px; height: 32px; color: var(--primary-600);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </a>
             <div class="header-title">
-                <h1>Smart Home Senior Care Cloud</h1>
+                <h1>Smart Home Care Cloud</h1>
                 <div class="header-subtitle">Admin Dashboard - System Operations</div>
             </div>
         </div>
         <div class="header-right">
-            <button class="notification-icon" id="notificationButton" aria-label="View notifications">
-                🔔
+            <button class="notification-icon icon-btn" id="notificationButton" aria-label="View notifications">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                 <span class="notification-badge">1</span>
             </button>
             <div class="user-info" id="userMenuToggle" role="button" tabindex="0" aria-haspopup="true">
@@ -35,6 +47,51 @@
             </div>
         </div>
     </div>
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+    <nav class="mobile-nav-drawer" id="mobileNavDrawer" role="navigation" aria-label="Mobile navigation">
+        <div class="mobile-nav-header">
+            <div class="mobile-nav-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 24px; height: 24px; color: var(--primary-600);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <span>Admin Menu</span>
+            </div>
+            <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">
+                ×
+            </button>
+        </div>
+        <div class="mobile-nav-items">
+            <button class="mobile-nav-item active" data-section="dashboard">
+                <span>📊</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="mobile-nav-item" data-section="tenants">
+                <span>🏢</span>
+                <span>Tenant Management</span>
+            </button>
+            <button class="mobile-nav-item" data-section="ml-models">
+                <span>🤖</span>
+                <span>ML Models</span>
+            </button>
+            <button class="mobile-nav-item" data-section="system-health">
+                <span>💚</span>
+                <span>System Health</span>
+            </button>
+            <button class="mobile-nav-item" data-section="logs">
+                <span>📋</span>
+                <span>Audit Logs</span>
+            </button>
+        </div>
+        <div class="mobile-nav-footer">
+            <div class="user-info" style="padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius-lg);">
+                <div class="avatar">AD</div>
+                <div class="user-details">
+                    <div class="user-name">Admin User</div>
+                    <div class="user-role">Cloud Service Admin</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <nav class="nav-bar" role="tablist">
         <button class="nav-item active" role="tab" data-section="dashboard">Dashboard</button>
         <button class="nav-item" role="tab" data-section="tenants">Tenant Management</button>
@@ -81,7 +138,17 @@
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title">🏢 Tenant Management</div>
-                    <button class="btn btn-primary">+ Add New Tenant</button>
+                    <div class="panel-actions">
+                        <button class="btn btn-secondary" data-export="csv" data-export-source="tenantsData">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            Export CSV
+                        </button>
+                        <button class="btn btn-secondary" data-export="print" data-export-source="tenantsData">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                            Print
+                        </button>
+                        <button class="btn btn-primary">+ Add New Tenant</button>
+                    </div>
                 </div>
                 <p style="margin: 1rem 0; color: #666;">Manage all tenants, view their status, and configure their settings.</p>
                 <table class="table" style="width: 100%; margin-top: 1rem;">
@@ -206,34 +273,47 @@
         <section class="section hidden" data-section="system-health">
             <div class="panel">
                 <div class="panel-header">
-                    <div class="panel-title">💚 System Health Monitor</div>
+                    <div class="panel-title">☁️ Live Architecture Status</div>
                     <button class="btn btn-secondary">Refresh Metrics</button>
                 </div>
-                <p style="margin: 1rem 0; color: #666;">Real-time health of all system components and AWS services.</p>
-                <div class="stats-grid" style="margin: 1.5rem 0;">
-                    <div class="stat-box">
-                        <div class="stat-label">API Gateway</div>
-                        <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
-                        <small>99.9% uptime</small>
+                <p style="margin: 1rem 0; color: #666;">Real-time visualization of the Cloud Infrastructure data flow.</p>
+                
+                <div id="cloudViz" style="margin-bottom: 2rem;"></div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">System Logs Stream</h3>
+                        <div id="matrixLogs"></div>
                     </div>
-                    <div class="stat-box">
-                        <div class="stat-label">RDS Database</div>
-                        <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
-                        <small>12ms latency</small>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">IoT Core</div>
-                        <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
-                        <small>340 connections</small>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Lambda Functions</div>
-                        <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
-                        <small>0 errors</small>
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">Service Health</h3>
+                        <div class="stats-grid" style="margin: 0; grid-template-columns: 1fr 1fr;">
+                            <div class="stat-box">
+                                <div class="stat-label">API Gateway</div>
+                                <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
+                                <small>99.9% uptime</small>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">RDS Database</div>
+                                <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
+                                <small>12ms latency</small>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">IoT Core</div>
+                                <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
+                                <small>340 connections</small>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Lambda</div>
+                                <div class="stat-value" style="color: #10b981;">✓ Healthy</div>
+                                <small>0 errors</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <h3 style="margin: 2rem 0 1rem;">AWS Services Status</h3>
-                <table class="table" style="width: 100%;">
+
+                <h3 style="margin: 2rem 0 1rem;">AWS Services Status (Live)</h3>
+                <table class="table" style="width: 100%;" id="awsStatusTable">
                     <thead>
                         <tr>
                             <th>Service</th>
@@ -244,41 +324,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>🌐 API Gateway</td>
-                            <td><span class="badge success">Operational</span></td>
-                            <td>us-west-2</td>
-                            <td>1,247 req/min</td>
-                            <td>Just now</td>
-                        </tr>
-                        <tr>
-                            <td>🗄️ RDS PostgreSQL</td>
-                            <td><span class="badge success">Operational</span></td>
-                            <td>us-west-2</td>
-                            <td>45 connections</td>
-                            <td>30 sec ago</td>
-                        </tr>
-                        <tr>
-                            <td>📡 IoT Core</td>
-                            <td><span class="badge success">Operational</span></td>
-                            <td>us-west-2</td>
-                            <td>340 devices</td>
-                            <td>15 sec ago</td>
-                        </tr>
-                        <tr>
-                            <td>⚡ Lambda</td>
-                            <td><span class="badge success">Operational</span></td>
-                            <td>us-west-2</td>
-                            <td>523 invocations</td>
-                            <td>Just now</td>
-                        </tr>
-                        <tr>
-                            <td>📦 S3 Storage</td>
-                            <td><span class="badge success">Operational</span></td>
-                            <td>us-west-2</td>
-                            <td>2.3 GB used</td>
-                            <td>1 min ago</td>
-                        </tr>
+                        <!-- Populated by JS -->
                     </tbody>
                 </table>
             </div>
@@ -289,11 +335,21 @@
                 <div class="panel-header">
                     <div class="panel-title">📋 Audit Logs</div>
                     <div class="panel-actions">
-                        <button class="btn btn-secondary">Filter</button>
-                        <button class="btn btn-secondary">Export</button>
+                        <button class="btn btn-secondary" id="logsFilterBtn">Filter</button>
+                        <button class="btn btn-secondary" data-export="csv" data-export-source="auditLogsData">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            Export CSV
+                        </button>
+                        <button class="btn btn-secondary" data-export="pdf" data-export-source="auditLogsData">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                            Export PDF
+                        </button>
                     </div>
                 </div>
                 <p style="margin: 1rem 0; color: #666;">Review all system and user activity. Logs are retained for 90 days.</p>
+                
+                <!-- Search & Filter -->
+                <div id="logsSearchContainer" style="margin: 1.5rem 0;"></div>
                 <table class="table" style="width: 100%; margin-top: 1rem;">
                     <thead>
                         <tr>
@@ -533,7 +589,14 @@
         </form>
     </dialog>
 
+    <script type="module" src="/src/assets/js/dark-mode.js"></script>
+    <script type="module" src="/src/assets/js/mobile-nav.js"></script>
     <script type="module" src="/src/assets/js/toast.js"></script>
+    <script type="module" src="/src/assets/js/charts.js"></script>
+    <script type="module" src="/src/assets/js/search-filter.js"></script>
+    <script type="module" src="/src/assets/js/export-reports.js"></script>
+    <script type="module" src="/src/assets/js/admin-dashboard-features.js"></script>
     <script type="module" src="/src/assets/js/admin-dashboard.js"></script>
+    <script type="module" src="/src/assets/js/command-palette.js"></script>
 </body>
 </html>
