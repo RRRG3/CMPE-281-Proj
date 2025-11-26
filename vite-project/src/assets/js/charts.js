@@ -25,6 +25,12 @@ export class ChartManager {
         const ctx = document.getElementById(canvasId);
         if (!ctx) return null;
         
+        // Destroy existing chart if it exists
+        if (this.charts.has(canvasId)) {
+            this.charts.get(canvasId).destroy();
+            this.charts.delete(canvasId);
+        }
+        
         const Chart = window.Chart;
         if (!Chart) return null;
 
@@ -101,6 +107,12 @@ export class ChartManager {
         const ctx = document.getElementById(canvasId);
         if (!ctx) return null;
         
+        // Destroy existing chart if it exists
+        if (this.charts.has(canvasId)) {
+            this.charts.get(canvasId).destroy();
+            this.charts.delete(canvasId);
+        }
+        
         const Chart = window.Chart;
         if (!Chart) return null;
 
@@ -144,6 +156,12 @@ export class ChartManager {
     createDoughnutChart(canvasId, data, options = {}) {
         const ctx = document.getElementById(canvasId);
         if (!ctx) return null;
+        
+        // Destroy existing chart if it exists
+        if (this.charts.has(canvasId)) {
+            this.charts.get(canvasId).destroy();
+            this.charts.delete(canvasId);
+        }
         
         const Chart = window.Chart;
         if (!Chart) return null;

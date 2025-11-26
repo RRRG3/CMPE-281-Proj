@@ -96,6 +96,17 @@ export async function post(path, body) {
   return res.json();
 }
 
+export async function put(path, body) {
+  await detectBackend();
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body || {})
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function get(path) {
   await detectBackend();
   const res = await fetch(`${API_BASE}${path}`);

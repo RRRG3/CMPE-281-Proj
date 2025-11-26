@@ -1,0 +1,105 @@
+{
+  "type": "rules",
+  "rules": [
+    {
+      "name": "critical_smoke",
+      "condition": {
+        "feature": "signal_amplitude",
+        "operator": ">",
+        "value": 0.9
+      },
+      "prediction": {
+        "type": "smoke_alarm",
+        "severity": "critical"
+      },
+      "confidence": 0.96
+    },
+    {
+      "name": "glass_break_high",
+      "condition": {
+        "feature": "signal_amplitude",
+        "operator": ">",
+        "value": 0.85
+      },
+      "prediction": {
+        "type": "glass_break",
+        "severity": "high"
+      },
+      "confidence": 0.91
+    },
+    {
+      "name": "fall_detection",
+      "condition": {
+        "feature": "signal_pattern_length",
+        "operator": ">",
+        "value": 2
+      },
+      "prediction": {
+        "type": "fall",
+        "severity": "high"
+      },
+      "confidence": 0.88
+    }
+  ],
+  "default_prediction": {
+    "type": "unknown",
+    "severity": "low"
+  },
+  "input_schema": {
+    "type": "object",
+    "required": [
+      "signal_amplitude",
+      "signal_pattern_length"
+    ],
+    "properties": {
+      "device_type": {
+        "type": "string"
+      },
+      "location": {
+        "type": "string"
+      },
+      "time_of_day": {
+        "type": "number"
+      },
+      "day_of_week": {
+        "type": "number"
+      },
+      "signal_pattern_length": {
+        "type": "number"
+      },
+      "signal_amplitude": {
+        "type": "number"
+      },
+      "historical_alert_count_7d": {
+        "type": "number"
+      },
+      "quiet_hours": {
+        "type": "boolean"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "prediction": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          }
+        }
+      },
+      "confidence": {
+        "type": "number"
+      }
+    }
+  },
+  "performance_metrics": {
+    "accuracy": 91.5,
+    "precision_critical": 96,
+    "avg_latency_ms": 20
+  }
+}

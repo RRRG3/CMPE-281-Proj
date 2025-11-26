@@ -4,8 +4,11 @@ import http from 'http';
 import Database from 'better-sqlite3';
 import { WebSocketServer } from 'ws';
 import { nanoid } from 'nanoid';
+import { MongoClient } from 'mongodb';
 import { hashPassword, comparePassword, generateAccessToken, generateRefreshToken } from './auth/utils.js';
 import { authenticate, requireRole } from './middleware/auth.js';
+import { MLModuleManager } from './ml/MLModuleManager.js';
+import { createMLRoutes } from './routes/ml-routes.js';
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -502,61 +505,9 @@ app.post('/api/v1/devices/:id/metrics', authenticate, (req, res) => {
   }
 });
 
-// ============ ML CONNECTOR STUB ============
-
-// POST /api/v1/ml/predict
-app.post('/api/v1/ml/predict', authenticate, async (req, res) => {
-  const { device_id, window_uri, ts, features } = req.body || {};
-  
-  if (!device_id) {
-    return res.status(400).json({ 
-      error: 'VALIDATION_ERROR',
-      details: ['device_id is required']
-    });
-  }
-  
-  try {
-    // Mock ML prediction
-    const predictions = [
-      { label: 'glass_break', score: 0.91 },
-      { label: 'dog_bark', score: 0.78 },
-      { label: 'smoke_alarm', score: 0.95 },
-      { label: 'normal', score: 0.45 }
-    ];
-    
-    const prediction = predictions[Math.floor(Math.random() * predictions.length)];
-    
-    // Store inference result
-    const inferenceId = nanoid();
-    db.prepare(`
-      INSERT INTO ml_inference (id, device_id, ts, model_name, score, label, window_uri, features, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      inferenceId,
-      device_id,
-      ts || nowISO(),
-      'audio_classifier_v3',
-      prediction.score,
-      prediction.label,
-      window_uri || null,
-      JSON.stringify(features || {}),
-      nowISO()
-    );
-    
-    console.log(`[ml] Prediction for ${device_id}: ${prediction.label} (${prediction.score})`);
-    
-    res.json({
-      inference_id: inferenceId,
-      prediction: prediction.label,
-      score: prediction.score,
-      model: 'audio_classifier_v3',
-      timestamp: nowISO()
-    });
-  } catch (error) {
-    console.error('[ml] Prediction error:', error);
-    res.status(500).json({ error: 'ML prediction failed' });
-  }
-});
+// ============ ML MODULE MANAGER ============
+// ML routes are now handled by the ML Module Manager
+// See /api/v1/ml/* endpoints registered during server initialization
 
 // ML-based severity decision engine
 function decideSeverity(event) {
@@ -1488,9 +1439,43 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
 wss.on('connection', (ws) => ws.send(JSON.stringify({ type: 'hello', payload: 'connected' })));
 
-server.listen(PORT, '0.0.0.0', () => {
+// Initialize MongoDB and ML Module Manager
+let mlManager;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017';
+const MONGO_DB = process.env.MONGO_DB || 'alert_monitoring';
+
+async function initializeMLModule() {
+  try {
+    console.log('[ML] Connecting to MongoDB...');
+    const mongoClient = new MongoClient(MONGO_URI);
+    await mongoClient.connect();
+    const mongoDb = mongoClient.db(MONGO_DB);
+    console.log('[ML] MongoDB connected');
+    
+    // Initialize ML Module Manager
+    mlManager = new MLModuleManager(mongoDb);
+    await mlManager.initialize();
+    console.log('[ML] ML Module Manager initialized');
+    
+    // Register ML routes
+    const mlRoutes = createMLRoutes(mlManager, authenticate, requireRole);
+    app.use('/api/v1/ml', mlRoutes);
+    console.log('[ML] ML routes registered');
+    
+    return true;
+  } catch (error) {
+    console.error('[ML] Failed to initialize ML Module:', error.message);
+    console.log('[ML] Server will continue without ML features');
+    return false;
+  }
+}
+
+server.listen(PORT, '0.0.0.0', async () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`📡 API: http://0.0.0.0:${PORT}`);
   console.log(`🔌 WebSocket: ws://0.0.0.0:${PORT}/ws`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  // Initialize ML Module Manager
+  await initializeMLModule();
 });

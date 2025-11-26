@@ -7,6 +7,7 @@ import {
   escalateAlert,
   resolveAlert,
   deleteAlert,
+  clearAllAlertsAction,
   bulkAcknowledgeAlerts,
   getAvailableActions,
   getSeverityBadge,
@@ -326,8 +327,108 @@ function handleCheckboxChange(checkbox) {
   updateBulkActionsBar();
 }
 
-// Update bulk actions bar
+// Initialize clear button
+let clearBtnInitialized = false;
+
+function initClearButton() {
+  if (clearBtnInitialized) return;
+  
+  const clearBtn = document.getElementById('clear-all-alerts');
+  if (clearBtn) {
+    // Clone button to remove existing listeners (from alert-generator.js)
+    const newBtn = clearBtn.cloneNode(true);
+    clearBtn.parentNode.replaceChild(newBtn, clearBtn);
+    
+    // Add our listener
+    newBtn.addEventListener('click', handleClearButtonClick);
+    clearBtnInitialized = true;
+  }
+}
+
+// Handle clear button click
+async function handleClearButtonClick() {
+  if (selectedAlerts.size > 0) {
+    // Delete selected
+    const alertIds = Array.from(selectedAlerts);
+    
+    if (!confirm(`Are you sure you want to delete ${alertIds.length} selected alert(s)? This action cannot be undone.`)) {
+      return;
+    }
+    
+    toast(`Deleting ${alertIds.length} alerts...`, 'info');
+    
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (const alertId of alertIds) {
+      const result = await deleteAlert(alertId);
+      if (result.success) {
+        successCount++;
+        removeRow(alertId);
+      } else {
+        failCount++;
+      }
+    }
+    
+    if (successCount > 0) {
+      toast(`${successCount} alert(s) deleted successfully`, 'success');
+      announceToScreenReader(`${successCount} alerts deleted`);
+    }
+    
+    if (failCount > 0) {
+      toast(`${failCount} alert(s) failed to delete`, 'error');
+    }
+    
+    // Clear selection
+    selectedAlerts.clear();
+    updateBulkActionsBar(); // Updates button text back to Clear All
+    
+  } else {
+    // Clear all alerts
+    if (!confirm('Are you sure you want to delete ALL alerts? This action cannot be undone.')) {
+      return;
+    }
+    
+    toast('🗑️ Clearing all alerts...', 'info');
+    
+    const result = await clearAllAlertsAction();
+    
+    if (result.success) {
+      toast(`✓ Cleared ${result.deleted} alerts`, 'success');
+      // Reload alerts
+      setTimeout(() => {
+        loadAlerts();
+      }, 500);
+    } else {
+      toast(`Failed to clear alerts: ${result.error}`, 'error');
+    }
+  }
+}
+
+// Update bulk actions bar (and clear button state)
 function updateBulkActionsBar() {
+  const clearBtn = document.getElementById('clear-all-alerts');
+  
+  // Ensure we have control of the button
+  if (!clearBtnInitialized) {
+    initClearButton();
+  }
+  
+  if (clearBtn) {
+    if (selectedAlerts.size > 0) {
+      clearBtn.textContent = `🗑️ Delete Selected (${selectedAlerts.size})`;
+      clearBtn.title = `Delete ${selectedAlerts.size} selected alerts`;
+      clearBtn.classList.remove('btn-danger'); // Maybe keep red?
+      clearBtn.classList.add('btn-warning'); // Visual cue for difference? Or keep danger.
+    } else {
+      clearBtn.textContent = '🗑️ Clear All';
+      clearBtn.title = 'Clear all alerts (all tenants)';
+      clearBtn.classList.remove('btn-warning');
+      clearBtn.classList.add('btn-danger');
+    }
+  }
+
+  // Update floating bar for other actions (Acknowledge)
   let bar = document.getElementById('bulk-actions-bar');
   
   if (selectedAlerts.size === 0) {
@@ -348,9 +449,6 @@ function updateBulkActionsBar() {
     <span class="bulk-actions-count">${selectedAlerts.size} selected</span>
     <button class="btn btn-success bulk-ack" id="bulk-ack-btn">
       ✓ Acknowledge All
-    </button>
-    <button class="btn btn-danger bulk-delete" id="bulk-delete-btn">
-      🗑️ Delete Selected
     </button>
     <button class="btn btn-secondary bulk-clear" id="bulk-clear-btn">
       Clear Selection
@@ -388,43 +486,6 @@ function updateBulkActionsBar() {
     
     // Uncheck all checkboxes
     tbody.querySelectorAll('.alert-checkbox').forEach(cb => cb.checked = false);
-  };
-  
-  // Bulk delete handler
-  bar.querySelector('#bulk-delete-btn').onclick = async () => {
-    const alertIds = Array.from(selectedAlerts);
-    
-    if (!confirm(`Are you sure you want to delete ${alertIds.length} alert(s)? This action cannot be undone.`)) {
-      return;
-    }
-    
-    toast(`Deleting ${alertIds.length} alerts...`, 'info');
-    
-    let successCount = 0;
-    let failCount = 0;
-    
-    for (const alertId of alertIds) {
-      const result = await deleteAlert(alertId);
-      if (result.success) {
-        successCount++;
-        removeRow(alertId);
-      } else {
-        failCount++;
-      }
-    }
-    
-    if (successCount > 0) {
-      toast(`${successCount} alert(s) deleted successfully`, 'success');
-      announceToScreenReader(`${successCount} alerts deleted`);
-    }
-    
-    if (failCount > 0) {
-      toast(`${failCount} alert(s) failed to delete`, 'error');
-    }
-    
-    // Clear selection
-    selectedAlerts.clear();
-    updateBulkActionsBar();
   };
   
   // Clear selection handler
@@ -531,6 +592,7 @@ loadAlerts();
 // Setup WebSocket after a short delay to allow tenant to load
 setTimeout(() => {
   setupWebSocket();
+  initClearButton(); // Ensure we take over the button
 }, 1000);
 
 // Cleanup on page unload

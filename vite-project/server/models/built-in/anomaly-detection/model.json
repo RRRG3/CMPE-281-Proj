@@ -1,0 +1,86 @@
+{
+  "type": "isolation_forest",
+  "threshold": 0.6,
+  "max_depth": 10,
+  "trees": [
+    {
+      "type": "node",
+      "feature": "cpu_usage_percent",
+      "threshold": 80,
+      "left": {
+        "type": "leaf",
+        "depth": 1
+      },
+      "right": {
+        "type": "node",
+        "feature": "error_count_1h",
+        "threshold": 5,
+        "left": {
+          "type": "leaf",
+          "depth": 2
+        },
+        "right": {
+          "type": "leaf",
+          "depth": 3
+        }
+      }
+    }
+  ],
+  "input_schema": {
+    "type": "object",
+    "required": [
+      "heartbeat_interval_ms",
+      "signal_strength",
+      "cpu_usage_percent"
+    ],
+    "properties": {
+      "heartbeat_interval_ms": {
+        "type": "number"
+      },
+      "signal_strength": {
+        "type": "number"
+      },
+      "cpu_usage_percent": {
+        "type": "number"
+      },
+      "memory_usage_percent": {
+        "type": "number"
+      },
+      "error_count_1h": {
+        "type": "number"
+      },
+      "restart_count_24h": {
+        "type": "number"
+      },
+      "temperature_celsius": {
+        "type": "number"
+      },
+      "uptime_hours": {
+        "type": "number"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "prediction": {
+        "type": "string",
+        "enum": [
+          "normal",
+          "anomaly"
+        ]
+      },
+      "confidence": {
+        "type": "number"
+      },
+      "anomaly_score": {
+        "type": "number"
+      }
+    }
+  },
+  "performance_metrics": {
+    "accuracy": 94.2,
+    "false_positive_rate": 3,
+    "avg_latency_ms": 15
+  }
+}

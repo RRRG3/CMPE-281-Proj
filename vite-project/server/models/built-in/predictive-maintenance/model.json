@@ -1,0 +1,101 @@
+{
+  "type": "rules",
+  "rules": [
+    {
+      "name": "high_risk",
+      "condition": {
+        "feature": "error_rate_7d",
+        "operator": ">",
+        "value": 10
+      },
+      "prediction": {
+        "failure_probability": 0.85,
+        "risk_level": "high",
+        "estimated_days_to_failure": 7
+      },
+      "confidence": 0.92
+    },
+    {
+      "name": "medium_risk",
+      "condition": {
+        "feature": "avg_temperature_7d",
+        "operator": ">",
+        "value": 70
+      },
+      "prediction": {
+        "failure_probability": 0.55,
+        "risk_level": "medium",
+        "estimated_days_to_failure": 30
+      },
+      "confidence": 0.78
+    }
+  ],
+  "default_prediction": {
+    "failure_probability": 0.1,
+    "risk_level": "low",
+    "estimated_days_to_failure": -1
+  },
+  "input_schema": {
+    "type": "object",
+    "required": [
+      "device_age_days",
+      "total_uptime_hours"
+    ],
+    "properties": {
+      "device_age_days": {
+        "type": "number"
+      },
+      "total_uptime_hours": {
+        "type": "number"
+      },
+      "total_restarts": {
+        "type": "number"
+      },
+      "avg_temperature_7d": {
+        "type": "number"
+      },
+      "max_temperature_7d": {
+        "type": "number"
+      },
+      "avg_cpu_usage_7d": {
+        "type": "number"
+      },
+      "avg_memory_usage_7d": {
+        "type": "number"
+      },
+      "error_rate_7d": {
+        "type": "number"
+      },
+      "last_maintenance_days_ago": {
+        "type": "number"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "prediction": {
+        "type": "object",
+        "properties": {
+          "failure_probability": {
+            "type": "number"
+          },
+          "estimated_days_to_failure": {
+            "type": "number"
+          },
+          "risk_level": {
+            "type": "string"
+          }
+        }
+      },
+      "confidence": {
+        "type": "number"
+      }
+    }
+  },
+  "performance_metrics": {
+    "accuracy": 88.3,
+    "precision_high_risk": 92,
+    "avg_latency_ms": 25
+  }
+}

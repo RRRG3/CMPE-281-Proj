@@ -772,6 +772,9 @@ dialog.modal::backdrop {
     animation: toast-slide-in var(--transition-slow) ease-out;
     position: relative;
     overflow: hidden;
+    /* Ensure solid background for readability */
+    opacity: 1;
+    backdrop-filter: none; 
 }
 
 .toast::before {
@@ -2786,22 +2789,27 @@ a:not(.btn):hover::after {
 [data-theme="dark"] .toast {
     background: var(--dark-bg-secondary);
     color: var(--dark-text-primary);
+    border: 1px solid var(--dark-border);
 }
 
 [data-theme="dark"] .toast.success {
-    background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, rgba(16, 185, 129, 0.1) 100%);
+    background: var(--dark-bg-secondary);
+    border-left-color: var(--success);
 }
 
 [data-theme="dark"] .toast.error {
-    background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, rgba(239, 68, 68, 0.1) 100%);
+    background: var(--dark-bg-secondary);
+    border-left-color: var(--error);
 }
 
 [data-theme="dark"] .toast.warning {
-    background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, rgba(245, 158, 11, 0.1) 100%);
+    background: var(--dark-bg-secondary);
+    border-left-color: var(--warning);
 }
 
 [data-theme="dark"] .toast.info {
-    background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, rgba(59, 130, 246, 0.1) 100%);
+    background: var(--dark-bg-secondary);
+    border-left-color: var(--info);
 }
 
 /* Dark Mode Empty States */

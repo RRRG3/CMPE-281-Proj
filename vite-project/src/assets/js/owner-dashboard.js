@@ -2,6 +2,8 @@ import { Chart, registerables } from 'chart.js';
 import { post, get } from './api.js';
 import alertSounds from './alert-sounds.js';
 import { createFloorPlan, toggleFloorPlanView } from './floor-plan.js';
+import { initSearchFilter } from './search-filter.js';
+import { initExportSystem } from './export-reports.js';
 
 Chart.register(...registerables);
 
@@ -1749,14 +1751,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ============================================
 // FEATURE INTEGRATION: Charts, Search, Export
 // ============================================
-
-// Initialize advanced features
-import { initCharts } from './charts.js';
-import { initSearchFilter } from './search-filter.js';
-import { initExportSystem } from './export-reports.js';
-
-// Initialize chart system
-const chartManager = initCharts();
 
 // Initialize search & filter for alert history
 let searchFilterSystem = null;

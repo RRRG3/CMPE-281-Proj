@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ML Module Manager - AI-Powered Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #8b5cf6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-900: #111827;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: var(--gray-900);
+    }
+    
+    /* Header */
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .header-subtitle {
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      font-weight: 500;
+    }
+    
+    .btn {
+      padding: 0.625rem 1.25rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: var(--gray-700);
+      border: 1px solid var(--gray-200);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--gray-50);
+    }
+    
+    /* Container */
+    .container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 0.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      transition: all 0.2s;
+    }
+    
+    .tab.active {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+    }
+    
+    .tab:hover:not(.active) {
+      background: var(--gray-100);
+      color: var(--gray-900);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--gray-100);
+    }
+    
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+    
+    /* Model Grid */
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .model-card {
+      background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 2px solid var(--gray-200);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    
+    .model-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      border-color: var(--primary);
+    }
+    
+    .model-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .model-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+    
+    .model-name {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+    
+    .model-type {
+      font-size: 0.75rem;
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    
+    .model-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    
+    .stat {
+      background: white;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--gray-200);
+    }
+    
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--gray-600);
+      font-weight: 500;
+    }
+    
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 0.25rem;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 0.375rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .badge-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .badge-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--gray-700);
+    }
+    
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    .form-textarea {
+      min-height: 200px;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    
+    /* Prediction Result */
+    .prediction-result {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 2px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    
+    .prediction-result h4 {
+      margin-bottom: 1rem;
+      color: #1e40af;
+      font-size: 1.125rem;
+      font-weight: 700;
+    }
+    
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #bfdbfe;
+    }
+    
+    .metric:last-child {
+      border-bottom: none;
+    }
+    
+    .metric-label {
+      font-weight: 600;
+      color: #1e40af;
+    }
+    
+    .metric-value {
+      font-weight: 700;
+      color: #1e3a8a;
+      font-family: 'Fira Code', monospace;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--gray-600);
+      font-size: 1.125rem;
+    }
+    
+    .loading::after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+    
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+    
+    .error {
+      background: #fee2e2;
+      border: 2px solid #fecaca;
+      color: #991b1b;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+    
+    .success {
+      background: #d1fae5;
+      border: 2px solid #a7f3d0;
+      color: #065f46;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+    
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    
+    th {
+      text-align: left;
+      padding: 1rem;
+      background: var(--gray-50);
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      border-bottom: 2px solid var(--gray-200);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    
+    tr:hover {
+      background: var(--gray-50);
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" style="width: 28px; height: 28px;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        </svg>
+      </div>
+      <div>
+        <h1>ML Module Manager</h1>
+        <div class="header-subtitle">AI-Powered Intelligence Platform</div>
+      </div>
+    </div>
+    <div>
+      <button class="btn btn-secondary" id="backButton" onclick="goBack()">← Back to Dashboard</button>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('models')">Models</button>
+      <button class="tab" onclick="switchTab('predict')">Test Predictions</button>
+      <button class="tab" onclick="switchTab('monitoring')">Performance</button>
+    </div>
+    
+    <!-- Models Tab -->
+    <div id="models-tab" class="tab-content active">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Registered AI Models</h2>
+          <button class="btn btn-primary" onclick="refreshModels()">Refresh</button>
+        </div>
+        
+        <div id="models-list">
+          <div class="loading">Loading models</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Predict Tab -->
+    <div id="predict-tab" class="tab-content">
+      <div class="card">
+        <h2 class="card-title" style="margin-bottom: 1.5rem;">Test Predictions</h2>
+        
+        <div class="form-group">
+          <label class="form-label">Select Model</label>
+          <select id="predict-model" class="form-select" onchange="loadSampleInput()">
+            <option value="">Loading models...</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Input Data (JSON)</label>
+          <textarea id="predict-input" class="form-textarea"></textarea>
+        </div>
+        
+        <button class="btn btn-primary" onclick="makePrediction()">Predict</button>
+        
+        <div id="prediction-result"></div>
+      </div>
+    </div>
+    
+    <!-- Monitoring Tab -->
+    <div id="monitoring-tab" class="tab-content">
+      <div class="card">
+        <h2 class="card-title" style="margin-bottom: 1.5rem;">System Status</h2>
+        <div id="system-status">
+          <div class="loading">Loading status</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Model Performance</h2>
+          <select id="metrics-model" class="form-select" style="width: 300px;" onchange="loadMetrics()">
+            <option value="">Select a model...</option>
+          </select>
+        </div>
+        <div id="model-metrics">
+          <p style="color: var(--gray-600);">Select a model to view performance metrics</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Configuration - can be overridden by environment
+    const API_BASE = window.ML_API_BASE || (window.location.origin.replace(':5173', ':3000') + '/api/v1');
+    let authToken = localStorage.getItem('access_token');
+    
+    if (!authToken) {
+      alert('Please login first to access the ML Dashboard');
+      window.location.href = 'index.html';
+    }
+    
+    // Handle back navigation
+    function goBack() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnTo = urlParams.get('returnTo');
+      
+      if (returnTo) {
+        // Decode the URL and navigate back
+        window.location.href = decodeURIComponent(returnTo);
+      } else {
+        // Default to home page
+        window.location.href = 'home.html';
+      }
+    }
+    
+    // Sample inputs for each model
+    const sampleInputs = {
+      'anomaly-detection': {
+        "deviceId": "DEV-001",
+        "features": {
+          "cpu_usage_percent": 78,
+          "signal_strength": -45,
+          "heartbeat_interval_ms": 5000,
+          "memory_usage_percent": 70,
+          "error_count_1h": 5,
+          "restart_count_24h": 1,
+          "temperature_celsius": 60,
+          "uptime_hours": 100
+        }
+      },
+      'alert-classification': {
+        "deviceId": "DEV-002",
+        "features": {
+          "signal_amplitude": 0.92,
+          "signal_pattern_length": 3.5,
+          "time_of_day": 14,
+          "day_of_week": 3,
+          "historical_alert_count_7d": 5,
+          "quiet_hours": false
+        }
+      },
+      'predictive-maintenance': {
+        "deviceId": "DEV-003",
+        "features": {
+          "device_age_days": 365,
+          "total_uptime_hours": 8000,
+          "total_restarts": 50,
+          "avg_temperature_7d": 75,
+          "max_temperature_7d": 85,
+          "avg_cpu_usage_7d": 65,
+          "avg_memory_usage_7d": 70,
+          "error_rate_7d": 15,
+          "last_maintenance_days_ago": 90
+        }
+      }
+    };
+    
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+      
+      if (tabName === 'models') refreshModels();
+      if (tabName === 'predict') loadModelsForPredict();
+      if (tabName === 'monitoring') loadSystemStatus();
+    }
+    
+    function loadSampleInput() {
+      const modelId = document.getElementById('predict-model').value;
+      const inputTextarea = document.getElementById('predict-input');
+      
+      if (modelId && sampleInputs[modelId]) {
+        inputTextarea.value = JSON.stringify(sampleInputs[modelId], null, 2);
+      }
+    }
+    
+    async function refreshModels() {
+      const container = document.getElementById('models-list');
+      container.innerHTML = '<div class="loading">Loading models</div>';
+      
+      try {
+        const response = await fetch(`${API_BASE}/ml/models`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.status === 401) {
+          container.innerHTML = '<div class="error">Session expired. Please <a href="index.html">login again</a>.</div>';
+          return;
+        }
+        
+        if (!response.ok) throw new Error('Failed to load models');
+        
+        const data = await response.json();
+        
+        if (data.models.length === 0) {
+          container.innerHTML = '<p style="color: var(--gray-600);">No models registered</p>';
+          return;
+        }
+        
+        const icons = {
+          'anomaly_detection': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" style="width: 24px; height: 24px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>',
+          'classification': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" style="width: 24px; height: 24px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>',
+          'regression': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" style="width: 24px; height: 24px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>'
+        };
+        
+        let html = '<div class="model-grid">';
+        
+        data.models.forEach(model => {
+          const statusClass = model.status === 'active' ? 'badge-success' : 'badge-warning';
+          const accuracy = model.performance_metrics?.accuracy || '-';
+          const icon = icons[model.type] || '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" style="width: 24px; height: 24px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>';
+          
+          html += `
+            <div class="model-card">
+              <div class="model-header">
+                <div class="model-icon">${icon}</div>
+                <div style="flex: 1;">
+                  <div class="model-name">${model.name}</div>
+                  <div class="model-type">${model.type.replace('_', ' ')}</div>
+                </div>
+                <span class="badge ${statusClass}">${model.status}</span>
+              </div>
+              <div class="model-stats">
+                <div class="stat">
+                  <div class="stat-label">Accuracy</div>
+                  <div class="stat-value">${typeof accuracy === 'number' ? accuracy + '%' : accuracy}</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">Version</div>
+                  <div class="stat-value">${model.version}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+      } catch (error) {
+        container.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    }
+    
+    async function loadModelsForPredict() {
+      try {
+        const response = await fetch(`${API_BASE}/ml/models`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.status === 401) {
+          alert('Session expired. Please login again.');
+          window.location.href = 'index.html';
+          return;
+        }
+        
+        const data = await response.json();
+        const select = document.getElementById('predict-model');
+        const metricsSelect = document.getElementById('metrics-model');
+        
+        select.innerHTML = '<option value="">Select a model...</option>';
+        metricsSelect.innerHTML = '<option value="">Select a model...</option>';
+        
+        data.models.forEach(model => {
+          select.innerHTML += `<option value="${model.model_id}">${model.name}</option>`;
+          metricsSelect.innerHTML += `<option value="${model.model_id}">${model.name}</option>`;
+        });
+        
+        if (data.models.length > 0) {
+          select.value = data.models[0].model_id;
+          loadSampleInput();
+        }
+      } catch (error) {
+        console.error('Failed to load models:', error);
+      }
+    }
+    
+    async function makePrediction() {
+      const modelId = document.getElementById('predict-model').value;
+      const inputText = document.getElementById('predict-input').value.trim();
+      const resultDiv = document.getElementById('prediction-result');
+      
+      if (!modelId) {
+        resultDiv.innerHTML = '<div class="error">Please select a model</div>';
+        return;
+      }
+      
+      if (!inputText) {
+        resultDiv.innerHTML = '<div class="error">Please enter input data</div>';
+        return;
+      }
+      
+      try {
+        let input;
+        try {
+          input = JSON.parse(inputText);
+        } catch (parseError) {
+          throw new Error('Invalid JSON format. Please check your input syntax.');
+        }
+        
+        if (!input.features) {
+          throw new Error('Input must contain a "features" object');
+        }
+        
+        resultDiv.innerHTML = '<div class="loading">Making prediction</div>';
+        
+        const response = await fetch(`${API_BASE}/ml/predict`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ model_id: modelId, input })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Prediction failed');
+        }
+        
+        const result = await response.json();
+        
+        let html = '<div class="prediction-result"><h4>✅ Prediction Result</h4>';
+        html += `<div class="metric"><span class="metric-label">Prediction:</span><span class="metric-value">${JSON.stringify(result.prediction, null, 2)}</span></div>`;
+        html += `<div class="metric"><span class="metric-label">Confidence:</span><span class="metric-value">${(result.confidence * 100).toFixed(1)}%</span></div>`;
+        html += `<div class="metric"><span class="metric-label">Processing Time:</span><span class="metric-value">${result.metadata.processingTimeMs}ms</span></div>`;
+        if (result.metadata.anomaly_score !== undefined) {
+          html += `<div class="metric"><span class="metric-label">Anomaly Score:</span><span class="metric-value">${result.metadata.anomaly_score.toFixed(2)}</span></div>`;
+        }
+        html += '</div>';
+        
+        resultDiv.innerHTML = html;
+      } catch (error) {
+        console.error('Prediction error:', error);
+        resultDiv.innerHTML = `<div class="error"><strong>Error:</strong> ${error.message}</div>`;
+      }
+    }
+    
+    async function loadSystemStatus() {
+      const container = document.getElementById('system-status');
+      
+      try {
+        const response = await fetch(`${API_BASE}/ml/status`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        const data = await response.json();
+        
+        let html = '<div class="model-stats" style="grid-template-columns: repeat(3, 1fr);">';
+        html += `<div class="stat"><div class="stat-label">Status</div><div class="stat-value" style="color: var(--success);">${data.status}</div></div>`;
+        html += `<div class="stat"><div class="stat-label">Total Models</div><div class="stat-value">${data.total_models}</div></div>`;
+        html += `<div class="stat"><div class="stat-label">Loaded Models</div><div class="stat-value">${data.loaded_models}</div></div>`;
+        html += '</div>';
+        
+        container.innerHTML = html;
+      } catch (error) {
+        container.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    }
+    
+    async function loadMetrics() {
+      const modelId = document.getElementById('metrics-model').value;
+      const container = document.getElementById('model-metrics');
+      
+      if (!modelId) {
+        container.innerHTML = '<p style="color: var(--gray-600);">Select a model to view performance metrics</p>';
+        return;
+      }
+      
+      container.innerHTML = '<div class="loading">Loading metrics</div>';
+      
+      try {
+        const response = await fetch(`${API_BASE}/ml/models/${modelId}/metrics`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        const data = await response.json();
+        
+        let html = '<div class="model-stats" style="grid-template-columns: repeat(4, 1fr);">';
+        html += `<div class="stat"><div class="stat-label">Total Predictions</div><div class="stat-value">${data.total_predictions}</div></div>`;
+        if (data.accuracy) html += `<div class="stat"><div class="stat-label">Accuracy</div><div class="stat-value">${data.accuracy}%</div></div>`;
+        html += `<div class="stat"><div class="stat-label">Avg Latency</div><div class="stat-value">${data.avg_latency_ms}ms</div></div>`;
+        html += `<div class="stat"><div class="stat-label">Throughput</div><div class="stat-value">${data.throughput.toFixed(2)}/s</div></div>`;
+        html += '</div>';
+        
+        container.innerHTML = html;
+      } catch (error) {
+        container.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    }
+    
+    // Initialize
+    refreshModels();
+    loadModelsForPredict();
+  </script>
+</body>
+</html>

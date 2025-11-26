@@ -1,4 +1,4 @@
-import { post, get, detectBackend } from './api.js';
+import { post, get, put, detectBackend } from './api.js';
 import { SkeletonLoader } from './skeleton.js';
 import wsClient from './websocket-client.js';
 import { CloudVisualizer, MatrixLogStream } from './cloud-viz.js';
@@ -419,7 +419,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       
       // ML Models - Deploy New Model
-      if (sectionType === 'ml-models' && target.classList.contains('btn-primary')) {
+      // Only open modal for buttons that don't have onclick handlers (to avoid conflicts with Predict button)
+      if (sectionType === 'ml-models' && target.classList.contains('btn-primary') && !target.hasAttribute('onclick')) {
         e.preventDefault();
         const modal = document.getElementById('modelModal');
         modal.showModal();
@@ -527,11 +528,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
           if (tenantId) {
             // Update existing tenant
-            await fetch(`${window.API_BASE || 'http://18.226.181.94:3000'}/api/v1/tenants/${tenantId}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(data)
-            });
+            await put(`/api/v1/tenants/${tenantId}`, data);
             toast('✓ Tenant updated successfully!', 'success');
           } else {
             // Create new tenant
@@ -693,4 +690,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   console.log('[ADMIN DASHBOARD] Loaded with', alerts.length, 'alerts');
+  
+  // Handle hash navigation (e.g., #ml-models)
+  function handleHashNavigation() {
+    const hash = window.location.hash.substring(1); // Remove the #
+    if (hash) {
+      const navItem = document.querySelector(`.nav-item[data-section="${hash}"]`);
+      if (navItem) {
+        navItem.click();
+      }
+    }
+  }
+  
+  // Check hash on load
+  handleHashNavigation();
+  
+  // Listen for hash changes
+  window.addEventListener('hashchange', handleHashNavigation);
 });

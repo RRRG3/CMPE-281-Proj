@@ -120,6 +120,27 @@ export async function deleteAlert(alertId) {
   }
 }
 
+// Clear all alerts
+export async function clearAllAlertsAction() {
+  try {
+    const response = await fetch('http://localhost:3000/api/v1/alerts/clear-all', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      return { success: true, deleted: result.deleted };
+    } else {
+      return { success: false, error: 'Request failed' };
+    }
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
 // Bulk acknowledge alerts
 export async function bulkAcknowledgeAlerts(alertIds, actor = 'current_user') {
   const results = {

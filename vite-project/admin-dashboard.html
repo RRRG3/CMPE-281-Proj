@@ -203,70 +203,63 @@
         <section class="section hidden" data-section="ml-models">
             <div class="panel">
                 <div class="panel-header">
-                    <div class="panel-title">🤖 ML Models Performance</div>
-                    <button class="btn btn-primary">Deploy New Model</button>
+                    <div class="panel-title">ML Module Manager</div>
+                    <button class="btn btn-primary" onclick="window.open('ml-dashboard.html?returnTo=admin-dashboard.html%23ml-models', '_blank')">Open Full Dashboard</button>
                 </div>
-                <p style="margin: 1rem 0; color: #666;">Monitor the performance of machine learning models and deploy new versions.</p>
-                <div class="stats-grid" style="margin: 1.5rem 0;">
-                    <div class="stat-box">
-                        <div class="stat-label">Audio Classification</div>
-                        <div class="stat-value" style="color: #10b981;">94.2%</div>
-                        <small>Accuracy</small>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Fall Detection</div>
-                        <div class="stat-value" style="color: #10b981;">96.8%</div>
-                        <small>Accuracy</small>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Anomaly Detection</div>
-                        <div class="stat-value" style="color: #f59e0b;">87.3%</div>
-                        <small>Accuracy</small>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">False Positives</div>
-                        <div class="stat-value" style="color: #10b981;">3.2%</div>
-                        <small>Rate</small>
+                <p style="margin: 1rem 0; color: #666;">Manage AI models, test predictions, and monitor performance with 3 built-in models.</p>
+                
+                <!-- ML Sub-tabs -->
+                <div style="display: flex; gap: 0.5rem; margin: 1.5rem 0; border-bottom: 2px solid #e5e7eb;">
+                    <button class="ml-tab active" onclick="switchMLTab('models', this)" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-weight: 600; color: #6b7280; margin-bottom: -2px;">Models</button>
+                    <button class="ml-tab" onclick="switchMLTab('predict', this)" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-weight: 600; color: #6b7280; margin-bottom: -2px;">Test Predictions</button>
+                    <button class="ml-tab" onclick="switchMLTab('performance', this)" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-weight: 600; color: #6b7280; margin-bottom: -2px;">Performance</button>
+                </div>
+                
+                <!-- Models Tab -->
+                <div id="ml-models-content" class="ml-tab-content">
+                    <div id="ml-models-list" style="margin-top: 1rem;">
+                        <div style="text-align: center; padding: 2rem; color: #6b7280;">Loading models...</div>
                     </div>
                 </div>
-                <table class="table" style="width: 100%; margin-top: 1rem;">
-                    <thead>
-                        <tr>
-                            <th>Model Name</th>
-                            <th>Version</th>
-                            <th>Status</th>
-                            <th>Deployed</th>
-                            <th>Accuracy</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Audio Classifier v3</td>
-                            <td>3.2.1</td>
-                            <td><span class="badge success">Production</span></td>
-                            <td>2025-10-01</td>
-                            <td>94.2%</td>
-                            <td><button class="btn btn-secondary">Details</button></td>
-                        </tr>
-                        <tr>
-                            <td>Fall Detection v2</td>
-                            <td>2.5.0</td>
-                            <td><span class="badge success">Production</span></td>
-                            <td>2025-09-15</td>
-                            <td>96.8%</td>
-                            <td><button class="btn btn-secondary">Details</button></td>
-                        </tr>
-                        <tr>
-                            <td>Anomaly Detector v1</td>
-                            <td>1.8.3</td>
-                            <td><span class="badge warning">Canary</span></td>
-                            <td>2025-10-10</td>
-                            <td>87.3%</td>
-                            <td><button class="btn btn-secondary">Details</button></td>
-                        </tr>
-                    </tbody>
-                </table>
+                
+                <!-- Test Predictions Tab -->
+                <div id="ml-predict-content" class="ml-tab-content" style="display: none;">
+                    <div style="margin-top: 1rem;">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Select Model</label>
+                            <select id="ml-predict-model" class="form-input" onchange="loadMLSampleInput()" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                                <option value="">Loading models...</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Input Data (JSON)</label>
+                            <textarea id="ml-predict-input" style="width: 100%; min-height: 200px; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 0.875rem;"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="makeMLPrediction()">Predict</button>
+                        <div id="ml-prediction-result" style="margin-top: 1rem;"></div>
+                    </div>
+                </div>
+                
+                <!-- Performance Tab -->
+                <div id="ml-performance-content" class="ml-tab-content" style="display: none;">
+                    <div style="margin-top: 1rem;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">System Status</h3>
+                            <div id="ml-system-status">
+                                <div style="text-align: center; padding: 2rem; color: #6b7280;">Loading status...</div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">Model Metrics</h3>
+                            <select id="ml-metrics-model" class="form-input" onchange="loadMLMetrics()" style="width: 300px; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 1rem;">
+                                <option value="">Select a model...</option>
+                            </select>
+                            <div id="ml-model-metrics">
+                                <p style="color: #6b7280;">Select a model to view performance metrics</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
         
@@ -598,5 +591,6 @@
     <script type="module" src="/src/assets/js/admin-dashboard-features.js"></script>
     <script type="module" src="/src/assets/js/admin-dashboard.js"></script>
     <script type="module" src="/src/assets/js/command-palette.js"></script>
+    <script type="module" src="/src/assets/js/ml-module-manager.js"></script>
 </body>
 </html>
