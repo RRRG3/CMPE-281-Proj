@@ -21,8 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
           email: username,
           password: password
         });
-
-        const data = await response.json();
         
         // Store tokens in localStorage
         localStorage.setItem('access_token', data.access_token);
