@@ -87,10 +87,6 @@
                 <span>📈</span>
                 <span>Reports & Analytics</span>
             </button>
-            <button class="mobile-nav-item" data-section="settings">
-                <span>⚙️</span>
-                <span>Settings & Privacy</span>
-            </button>
         </div>
         <div class="mobile-nav-footer">
             <div class="user-info" style="padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius-lg);">
@@ -108,7 +104,6 @@
         <button class="nav-item" role="tab" data-section="live-alerts">Live Alerts</button>
         <button class="nav-item" role="tab" data-section="alert-history">Alert History</button>
         <button class="nav-item" role="tab" data-section="reports">Reports &amp; Analytics</button>
-        <button class="nav-item" role="tab" data-section="settings">Settings &amp; Privacy</button>
     </nav>
     <main class="content">
         <section class="section" data-section="dashboard">
@@ -334,30 +329,6 @@
                         <button class="report-card" data-report="export">📥 Export All Data</button>
                     </div>
                 </div>
-            </div>
-        </section>
-        <section class="section hidden" data-section="settings">
-            <div class="panel section-placeholder">
-                <div class="panel-title">Settings &amp; Privacy</div>
-                <form class="settings-form" id="settingsForm">
-                    <label>
-                        <span>Two-Factor Authentication</span>
-                        <input type="checkbox" name="mfa" checked>
-                    </label>
-                    <label>
-                        <span>Share alerts with family members</span>
-                        <input type="checkbox" name="shareAlerts" checked>
-                    </label>
-                    <label>
-                        <span>Quiet hours start</span>
-                        <input type="time" name="quietStart" value="22:00">
-                    </label>
-                    <label>
-                        <span>Quiet hours end</span>
-                        <input type="time" name="quietEnd" value="06:00">
-                    </label>
-                    <button class="btn btn-primary" type="submit">Save Preferences</button>
-                </form>
             </div>
         </section>
     </main>
