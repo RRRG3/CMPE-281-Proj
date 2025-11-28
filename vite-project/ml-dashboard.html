@@ -816,8 +816,15 @@
         let html = '<div class="model-stats" style="grid-template-columns: repeat(4, 1fr);">';
         html += `<div class="stat"><div class="stat-label">Total Predictions</div><div class="stat-value">${data.total_predictions}</div></div>`;
         if (data.accuracy) html += `<div class="stat"><div class="stat-label">Accuracy</div><div class="stat-value">${data.accuracy}%</div></div>`;
-        html += `<div class="stat"><div class="stat-label">Avg Latency</div><div class="stat-value">${data.avg_latency_ms}ms</div></div>`;
-        html += `<div class="stat"><div class="stat-label">Throughput</div><div class="stat-value">${data.throughput.toFixed(2)}/s</div></div>`;
+        
+        // Format latency display
+        const latencyDisplay = data.avg_latency_ms < 1 && data.avg_latency_ms > 0 
+          ? '<1ms' 
+          : `${data.avg_latency_ms}ms`;
+        html += `<div class="stat"><div class="stat-label">Avg Latency</div><div class="stat-value">${latencyDisplay}</div></div>`;
+        
+        const throughputUnit = data.throughput_unit === 'per_hour' ? '/hr' : '/s';
+        html += `<div class="stat"><div class="stat-label">Throughput</div><div class="stat-value">${data.throughput.toFixed(2)}${throughputUnit}</div></div>`;
         html += '</div>';
         
         container.innerHTML = html;
