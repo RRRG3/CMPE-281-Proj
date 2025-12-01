@@ -192,11 +192,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!tbody) return;
 
     const services = [
-        { name: '🌐 API Gateway', region: 'us-west-2', metric: 'req/min', base: 1200, var: 200 },
-        { name: '🗄️ RDS PostgreSQL', region: 'us-west-2', metric: 'conn', base: 45, var: 10 },
-        { name: '📡 IoT Core', region: 'us-west-2', metric: 'devices', base: 340, var: 5 },
-        { name: '⚡ Lambda', region: 'us-west-2', metric: 'invoc', base: 500, var: 100 },
-        { name: '📦 S3 Storage', region: 'us-west-2', metric: 'GB', base: 2.3, var: 0.1 }
+        { name: '🌐 Nginx Load Balancer', region: 'us-west-2', metric: 'req/min', base: 1200, var: 200 },
+        { name: '🗄️ MongoDB Database', region: 'us-west-2', metric: 'conn', base: 45, var: 10 },
+        { name: '📡 Node.js API Servers', region: 'us-west-2', metric: 'instances', base: 3, var: 0 },
+        { name: '⚡ Docker Containers', region: 'us-west-2', metric: 'active', base: 5, var: 1 },
+        { name: '📦 EC2 Instance', region: 'us-west-2', metric: 'CPU %', base: 45, var: 15 }
     ];
 
     const update = () => {

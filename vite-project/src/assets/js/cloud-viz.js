@@ -12,10 +12,10 @@ export class CloudVisualizer {
         
         this.services = [
             { id: 'iot', name: 'IoT Core', icon: 'wifi', class: 'node-iot' },
-            { id: 'lambda', name: 'Lambda', icon: 'cpu', class: 'node-lambda' },
-            { id: 'db', name: 'RDS / Dynamo', icon: 'database', class: 'node-db' },
-            { id: 'ml', name: 'SageMaker', icon: 'brain', class: 'node-ml' },
-            { id: 'api', name: 'API Gateway', icon: 'globe', class: 'node-api' }
+            { id: 'lambda', name: 'Node.js API', icon: 'cpu', class: 'node-lambda' },
+            { id: 'db', name: 'MongoDB', icon: 'database', class: 'node-db' },
+            { id: 'ml', name: 'Docker', icon: 'brain', class: 'node-ml' },
+            { id: 'api', name: 'Nginx LB', icon: 'globe', class: 'node-api' }
         ];
 
         this.connections = [
@@ -177,7 +177,7 @@ export class MatrixLogStream {
         this.container = document.getElementById(containerId);
         this.logs = [
             "INITIALIZING_SYSTEM_CORE...",
-            "CONNECTING_TO_AWS_IOT_CORE...",
+            "CONNECTING_TO_IOT_DEVICES...",
             "ESTABLISHING_SECURE_HANDSHAKE...",
             "LOADING_ML_MODELS [v3.2.1]...",
             "AUDIT_LOG_SERVICE_ACTIVE",
@@ -218,7 +218,7 @@ export class MatrixLogStream {
 
     generateRandomLog() {
         const actions = ['INGEST', 'PROCESS', 'ANALYZE', 'STORE', 'ACK'];
-        const components = ['IOT_SENSOR', 'LAMBDA_FN', 'DYNAMODB', 'SAGEMAKER'];
+        const components = ['IOT_SENSOR', 'NODE_API', 'MONGODB', 'DOCKER_CONTAINER'];
         const status = ['SUCCESS', 'PENDING', 'COMPLETED', 'OK'];
         
         const log = `${actions[Math.floor(Math.random()*actions.length)]} :: ${components[Math.floor(Math.random()*components.length)]} -> ${status[Math.floor(Math.random()*status.length)]}`;
