@@ -113,13 +113,13 @@ export class CloudVisualizer {
         this.svg.appendChild(path);
 
         // Store connection data for particles
-        const connId = `${el1.id.replace('node-', '')}-${el2.id.replace('node-', '')}`;
+        const connId = `conn_${el1.id.replace('node-', '')}_${el2.id.replace('node-', '')}`;
         el1.dataset[connId] = JSON.stringify({ x1, y1, x2, y2 });
     }
 
     emitParticle(fromId, toId) {
         const fromEl = document.getElementById(`node-${fromId}`);
-        const connId = `${fromId}-${toId}`;
+        const connId = `conn_${fromId}_${toId}`;
         const coords = JSON.parse(fromEl?.dataset[connId] || '{}');
         
         if (!coords.x1) return;

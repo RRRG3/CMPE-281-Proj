@@ -37,7 +37,7 @@ export function generateAccessToken(user) {
   };
 
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: '1h',
+    expiresIn: '24h', // Extended for demo - change back to '1h' for production
     algorithm: 'HS256',
   });
 }

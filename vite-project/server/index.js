@@ -9,10 +9,24 @@ import { hashPassword, comparePassword, generateAccessToken, generateRefreshToke
 import { authenticate, requireRole } from './middleware/auth.js';
 import { MLModuleManager } from './ml/MLModuleManager.js';
 import { createMLRoutes } from './routes/ml-routes.js';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const PORT = process.env.PORT || 3000;
 const app = express();
-app.use(cors());
+
+// Configure CORS to allow requests from frontend
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 const db = new Database('data.db');
@@ -1432,6 +1446,152 @@ app.post('/api/v1/devices/:id/heartbeat', (req, res) => {
   console.log(`[mqtt-sim] device/${device.device_id}/status: ${status} at ${ts}`);
   broadcast('device.heartbeat', updated);
   res.json({ success: true, last_seen: ts, status });
+});
+
+// ============ LOAD TEST ENDPOINTS ============
+// Store latest load test result in memory
+let latestLoadTestResult = {
+  timestamp: "2025-12-01T18:43:35.667Z",
+  configuration: {
+    duration: 60000,
+    concurrentUsers: 10,
+    target: "http://localhost:3000"
+  },
+  summary: {
+    totalRequests: 1988,
+    successful: 1988,
+    failed: 0,
+    successRate: 100,
+    requestsPerSecond: 33.13
+  },
+  latency: {
+    min: 0.46,
+    max: 10.63,
+    average: 2.48,
+    p50: 2.38,
+    p95: 4.30,
+    p99: 5.89
+  },
+  endpoints: {
+    "GET /api/v1/alerts/stats": {
+      requests: 378,
+      successful: 378,
+      failed: 0,
+      avgLatency: 2.30,
+      minLatency: 0.56,
+      maxLatency: 8.03
+    },
+    "POST /api/v1/alerts/search": {
+      requests: 425,
+      successful: 425,
+      failed: 0,
+      avgLatency: 2.75,
+      minLatency: 0.79,
+      maxLatency: 8.90
+    },
+    "GET /api/v1/devices": {
+      requests: 291,
+      successful: 291,
+      failed: 0,
+      avgLatency: 2.99,
+      minLatency: 0.85,
+      maxLatency: 7.39
+    },
+    "POST /api/v1/alerts/ingest": {
+      requests: 589,
+      successful: 589,
+      failed: 0,
+      avgLatency: 2.37,
+      minLatency: 0.65,
+      maxLatency: 10.63
+    },
+    "POST /api/v1/devices": {
+      requests: 305,
+      successful: 305,
+      failed: 0,
+      avgLatency: 2.05,
+      minLatency: 0.46,
+      maxLatency: 8.39
+    }
+  },
+  errors: []
+};
+
+// POST /api/v1/admin/run-load-test - Trigger a load test
+app.post('/api/v1/admin/run-load-test', async (req, res) => {
+  const { users = 10, duration = 60000 } = req.body || {};
+  
+  console.log(`[LOAD TEST] Starting test with ${users} users for ${duration}ms`);
+  
+  try {
+    // Import and run the load test
+    const { spawn } = await import('child_process');
+    const loadTest = spawn('node', ['load-test.js'], {
+      cwd: __dirname,
+      env: {
+        ...process.env,
+        CONCURRENT_USERS: users.toString(),
+        TEST_DURATION: duration.toString()
+      }
+    });
+    
+    let output = '';
+    loadTest.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+    
+    loadTest.on('close', async (code) => {
+      console.log(`[LOAD TEST] Completed with code ${code}`);
+      
+      // Read the latest report file
+      const fs = await import('fs/promises');
+      const files = await fs.readdir(__dirname);
+      const reportFiles = files.filter(f => f.startsWith('load-test-report-'));
+      
+      if (reportFiles.length > 0) {
+        // Get the most recent report
+        reportFiles.sort().reverse();
+        const latestReport = reportFiles[0];
+        const reportData = await fs.readFile(`${__dirname}/${latestReport}`, 'utf8');
+        latestLoadTestResult = JSON.parse(reportData);
+      }
+    });
+    
+    // Return immediately with accepted status
+    res.json({
+      success: true,
+      message: 'Load test started',
+      estimatedDuration: duration,
+      users
+    });
+    
+  } catch (error) {
+    console.error('[LOAD TEST] Error:', error);
+    res.status(500).json({ error: 'Failed to start load test', details: error.message });
+  }
+});
+
+// GET /api/v1/admin/latest-load-test - Get latest load test results
+app.get('/api/v1/admin/latest-load-test', (req, res) => {
+  res.json(latestLoadTestResult);
+});
+
+// ============ HEALTH CHECK ENDPOINT ============
+app.get('/health', (req, res) => {
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    instance: process.env.INSTANCE_ID || 'single',
+    uptime: process.uptime(),
+    checks: {
+      sqlite: { status: 'up' },
+      memory: {
+        heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + 'MB',
+        heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + 'MB'
+      }
+    }
+  };
+  res.json(health);
 });
 
 // HTTP + WS

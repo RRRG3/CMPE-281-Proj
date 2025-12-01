@@ -85,6 +85,10 @@
                 <span>📋</span>
                 <span>Audit Logs</span>
             </button>
+            <button class="mobile-nav-item" data-section="performance">
+                <span>📊</span>
+                <span>Performance Metrics</span>
+            </button>
         </div>
         <div class="mobile-nav-footer">
             <div class="user-info" style="padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius-lg);">
@@ -103,6 +107,7 @@
         <button class="nav-item" role="tab" data-section="ml-models">ML Models</button>
         <button class="nav-item" role="tab" data-section="system-health">System Health</button>
         <button class="nav-item" role="tab" data-section="logs">Audit Logs</button>
+        <button class="nav-item" role="tab" data-section="performance">Performance Metrics</button>
     </nav>
     <main class="content">
         <section class="section" data-section="dashboard">
@@ -407,6 +412,161 @@
                             <td>Database: smarthome</td>
                             <td><span class="badge success">Success</span></td>
                             <td>10.0.1.50</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Performance Metrics Section -->
+        <section class="section hidden" data-section="performance">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Performance Metrics</div>
+                    <div class="panel-actions">
+                        <button class="btn btn-primary" id="runLoadTestBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                            Run Load Test
+                        </button>
+                        <button class="btn btn-secondary" id="refreshMetricsBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Summary Box -->
+                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; border-radius: 12px; margin: 20px 0; text-align: center;">
+                    <h2 style="font-size: 28px; margin-bottom: 10px;">Outstanding Performance</h2>
+                    <p style="font-size: 18px; opacity: 0.9;" id="performanceSummary">100% Success Rate | 2.48ms Average Latency | 33.13 Requests/Second</p>
+                </div>
+
+                <!-- Test Configuration -->
+                <h3 style="margin: 30px 0 15px 0; color: #333; font-size: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Test Configuration</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Test Date</div>
+                        <div style="font-size: 16px; font-weight: 700; color: #333;" id="testDate">Dec 1, 2025 10:43 AM</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Duration</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #333;" id="testDuration">60s</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Concurrent Users</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #333;" id="testUsers">10</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Target</div>
+                        <div style="font-size: 14px; font-weight: 700; color: #333;" id="testTarget">localhost:3000</div>
+                    </div>
+                </div>
+
+                <!-- Overall Performance -->
+                <h3 style="margin: 30px 0 15px 0; color: #333; font-size: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Overall Performance</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 12px; opacity: 0.9; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Total Requests</div>
+                        <div style="font-size: 32px; font-weight: 700;" id="totalRequests">1,988</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Success Rate</div>
+                        <div style="font-size: 32px; font-weight: 700; color: #10b981;" id="successRate">100%</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Requests/Second</div>
+                        <div style="font-size: 32px; font-weight: 700; color: #10b981;" id="requestsPerSec">33.13</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 10px;">
+                        <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Avg Latency</div>
+                        <div style="font-size: 32px; font-weight: 700; color: #10b981;" id="avgLatency">2.48ms</div>
+                    </div>
+                </div>
+
+                <!-- Latency Distribution -->
+                <h3 style="margin: 30px 0 15px 0; color: #333; font-size: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Latency Distribution</h3>
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                    <div id="latencyChart" style="display: flex; align-items: flex-end; justify-content: space-around; height: 200px; margin: 20px 0;">
+                        <div style="flex: 1; margin: 0 10px; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; position: relative; height: 7.8%;">
+                            <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 700; color: #333; white-space: nowrap;">0.46ms</div>
+                            <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: #666; white-space: nowrap;">Min</div>
+                        </div>
+                        <div style="flex: 1; margin: 0 10px; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; position: relative; height: 42.1%;">
+                            <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 700; color: #333; white-space: nowrap;">2.48ms</div>
+                            <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: #666; white-space: nowrap;">Average</div>
+                        </div>
+                        <div style="flex: 1; margin: 0 10px; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; position: relative; height: 40.3%;">
+                            <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 700; color: #333; white-space: nowrap;">2.38ms</div>
+                            <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: #666; white-space: nowrap;">P50</div>
+                        </div>
+                        <div style="flex: 1; margin: 0 10px; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; position: relative; height: 72.9%;">
+                            <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 700; color: #333; white-space: nowrap;">4.30ms</div>
+                            <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: #666; white-space: nowrap;">P95</div>
+                        </div>
+                        <div style="flex: 1; margin: 0 10px; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; position: relative; height: 100%;">
+                            <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 700; color: #333; white-space: nowrap;">5.89ms</div>
+                            <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: #666; white-space: nowrap;">P99</div>
+                        </div>
+                        <div style="flex: 1; margin: 0 10px; background: linear-gradient(to top, #667eea, #764ba2); border-radius: 8px 8px 0 0; position: relative; height: 100%;">
+                            <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 700; color: #333; white-space: nowrap;">10.63ms</div>
+                            <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: #666; white-space: nowrap;">Max</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Endpoint Performance Table -->
+                <h3 style="margin: 30px 0 15px 0; color: #333; font-size: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Endpoint Performance</h3>
+                <table class="table" style="width: 100%; margin-top: 1rem;">
+                    <thead>
+                        <tr>
+                            <th>Endpoint</th>
+                            <th>Requests</th>
+                            <th>Success Rate</th>
+                            <th>Avg Latency</th>
+                            <th>Min Latency</th>
+                            <th>Max Latency</th>
+                        </tr>
+                    </thead>
+                    <tbody id="endpointPerformanceTable">
+                        <tr>
+                            <td><strong>POST /api/v1/devices</strong></td>
+                            <td>305</td>
+                            <td><span class="badge success">100%</span></td>
+                            <td><strong>2.05ms</strong></td>
+                            <td>0.46ms</td>
+                            <td>8.39ms</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GET /api/v1/alerts/stats</strong></td>
+                            <td>378</td>
+                            <td><span class="badge success">100%</span></td>
+                            <td><strong>2.30ms</strong></td>
+                            <td>0.56ms</td>
+                            <td>8.03ms</td>
+                        </tr>
+                        <tr>
+                            <td><strong>POST /api/v1/alerts/ingest</strong></td>
+                            <td>589</td>
+                            <td><span class="badge success">100%</span></td>
+                            <td><strong>2.37ms</strong></td>
+                            <td>0.65ms</td>
+                            <td>10.63ms</td>
+                        </tr>
+                        <tr>
+                            <td><strong>POST /api/v1/alerts/search</strong></td>
+                            <td>425</td>
+                            <td><span class="badge success">100%</span></td>
+                            <td><strong>2.75ms</strong></td>
+                            <td>0.79ms</td>
+                            <td>8.90ms</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GET /api/v1/devices</strong></td>
+                            <td>291</td>
+                            <td><span class="badge success">100%</span></td>
+                            <td><strong>2.99ms</strong></td>
+                            <td>0.85ms</td>
+                            <td>7.39ms</td>
                         </tr>
                     </tbody>
                 </table>

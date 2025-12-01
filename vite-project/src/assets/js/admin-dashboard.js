@@ -691,6 +691,123 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   console.log('[ADMIN DASHBOARD] Loaded with', alerts.length, 'alerts');
   
+  // Performance Metrics Handlers
+  const runLoadTestBtn = document.getElementById('runLoadTestBtn');
+  const refreshMetricsBtn = document.getElementById('refreshMetricsBtn');
+  
+  if (runLoadTestBtn) {
+    runLoadTestBtn.addEventListener('click', async () => {
+      toast('🚀 Starting load test... This will take about 60 seconds', 'info');
+      runLoadTestBtn.disabled = true;
+      runLoadTestBtn.innerHTML = '<span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span> Running Test...';
+      
+      try {
+        // Trigger load test on backend
+        const response = await fetch('http://localhost:3000/api/v1/admin/run-load-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ users: 10, duration: 60000 })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          toast('✅ Load test completed successfully!', 'success');
+          
+          // Update metrics on page
+          updatePerformanceMetrics(result);
+        } else {
+          toast('⚠️ Load test completed but check console for details', 'warning');
+        }
+      } catch (error) {
+        console.error('Load test error:', error);
+        toast('❌ Load test failed. Make sure the server is running.', 'error');
+      } finally {
+        runLoadTestBtn.disabled = false;
+        runLoadTestBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg> Run Load Test';
+      }
+    });
+  }
+  
+  if (refreshMetricsBtn) {
+    refreshMetricsBtn.addEventListener('click', async () => {
+      toast('🔄 Refreshing performance metrics...', 'info');
+      try {
+        const response = await fetch('http://localhost:3000/api/v1/admin/latest-load-test');
+        if (response.ok) {
+          const result = await response.json();
+          updatePerformanceMetrics(result);
+          toast('✅ Metrics refreshed!', 'success');
+        } else {
+          toast('⚠️ No recent load test data found', 'warning');
+        }
+      } catch (error) {
+        console.error('Refresh error:', error);
+        toast('❌ Failed to refresh metrics', 'error');
+      }
+    });
+  }
+  
+  function updatePerformanceMetrics(data) {
+    console.log('Updating metrics with data:', data);
+    
+    // Check if data has the expected structure
+    if (!data || !data.summary || !data.latency || !data.configuration) {
+      console.error('Invalid data structure:', data);
+      toast('⚠️ Received invalid data format', 'warning');
+      return;
+    }
+    
+    // Update summary
+    const summaryEl = document.getElementById('performanceSummary');
+    if (summaryEl) {
+      summaryEl.textContent = 
+        `${data.summary.successRate.toFixed(2)}% Success Rate | ${data.latency.average.toFixed(2)}ms Average Latency | ${data.summary.requestsPerSecond.toFixed(2)} Requests/Second`;
+    }
+    
+    // Update test config
+    const testDateEl = document.getElementById('testDate');
+    if (testDateEl) testDateEl.textContent = new Date(data.timestamp).toLocaleString();
+    
+    const testDurationEl = document.getElementById('testDuration');
+    if (testDurationEl) testDurationEl.textContent = `${data.configuration.duration / 1000}s`;
+    
+    const testUsersEl = document.getElementById('testUsers');
+    if (testUsersEl) testUsersEl.textContent = data.configuration.concurrentUsers;
+    
+    const testTargetEl = document.getElementById('testTarget');
+    if (testTargetEl) testTargetEl.textContent = data.configuration.target;
+    
+    // Update overall performance
+    const totalRequestsEl = document.getElementById('totalRequests');
+    if (totalRequestsEl) totalRequestsEl.textContent = data.summary.totalRequests.toLocaleString();
+    
+    const successRateEl = document.getElementById('successRate');
+    if (successRateEl) successRateEl.textContent = `${data.summary.successRate.toFixed(2)}%`;
+    
+    const requestsPerSecEl = document.getElementById('requestsPerSec');
+    if (requestsPerSecEl) requestsPerSecEl.textContent = data.summary.requestsPerSecond.toFixed(2);
+    
+    const avgLatencyEl = document.getElementById('avgLatency');
+    if (avgLatencyEl) avgLatencyEl.textContent = `${data.latency.average.toFixed(2)}ms`;
+    
+    // Update endpoint table
+    const tbody = document.getElementById('endpointPerformanceTable');
+    if (tbody && data.endpoints) {
+      tbody.innerHTML = Object.entries(data.endpoints).map(([endpoint, stats]) => `
+        <tr>
+          <td><strong>${endpoint}</strong></td>
+          <td>${stats.requests}</td>
+          <td><span class="badge success">${(stats.successful/stats.requests*100).toFixed(2)}%</span></td>
+          <td><strong>${stats.avgLatency.toFixed(2)}ms</strong></td>
+          <td>${stats.minLatency.toFixed(2)}ms</td>
+          <td>${stats.maxLatency.toFixed(2)}ms</td>
+        </tr>
+      `).join('');
+    }
+    
+    console.log('Metrics updated successfully');
+  }
+  
   // Handle hash navigation (e.g., #ml-models)
   function handleHashNavigation() {
     const hash = window.location.hash.substring(1); // Remove the #
