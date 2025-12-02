@@ -4,6 +4,7 @@ import alertSounds from './alert-sounds.js';
 import { createFloorPlan, toggleFloorPlanView } from './floor-plan.js';
 import { initSearchFilter } from './search-filter.js';
 import { initExportSystem } from './export-reports.js';
+import { showToast } from './toast.js';
 
 Chart.register(...registerables);
 
@@ -770,23 +771,95 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function initQuickActions() {
     document.querySelectorAll('.action-btn').forEach((button) => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', async () => {
         const action = button.dataset.action;
         switch (action) {
           case 'emergency':
-            toast('Connecting to emergency response line...', 'warning');
+            // Trigger emergency alert
+            showToast('🚨 Triggering emergency alert...', 'warning');
+            try {
+              await post('/api/v1/alerts/ingest', {
+                house_id: currentTenant?.house_id || 'EMERGENCY',
+                device_id: 'MANUAL_TRIGGER',
+                type: 'emergency',
+                severity: 'critical',
+                message: 'Emergency button pressed by user',
+                tenant: currentTenant?.tenant_id || 'default'
+              });
+              showToast('✓ Emergency services notified!', 'success');
+              // Reload alerts to show the new emergency alert
+              await renderAlerts();
+            } catch (err) {
+              showToast('Failed to trigger emergency alert', 'error');
+              console.error('[owner] Emergency alert failed:', err);
+            }
             break;
+            
           case 'acknowledge-all':
-            toast('All alerts acknowledged.', 'success');
+            // Acknowledge all alerts
+            showToast('Acknowledging all alerts...', 'info');
+            try {
+              const response = await post('/api/v1/alerts/acknowledge-all', {
+                tenant: currentTenant?.tenant_id || 'default'
+              });
+              showToast(`✓ ${response.count || 'All'} alerts acknowledged!`, 'success');
+              await renderAlerts();
+            } catch (err) {
+              showToast('Failed to acknowledge alerts', 'error');
+              console.error(err);
+            }
             break;
+            
           case 'generate-report':
-            toast('Weekly report is being generated.', 'info');
+            // Generate and download weekly report
+            showToast('📊 Generating weekly report...', 'info');
+            try {
+              const alerts = await post('/api/v1/alerts/search', { 
+                tenant: currentTenant?.tenant_id,
+                limit: 100 
+              });
+              
+              // Create report data
+              const report = {
+                tenant: currentTenant?.name || 'Unknown',
+                generated: new Date().toISOString(),
+                period: 'Last 7 Days',
+                summary: {
+                  total_alerts: alerts.items?.length || 0,
+                  critical: alerts.items?.filter(a => a.severity === 'critical').length || 0,
+                  high: alerts.items?.filter(a => a.severity === 'high').length || 0,
+                  medium: alerts.items?.filter(a => a.severity === 'medium').length || 0,
+                  low: alerts.items?.filter(a => a.severity === 'low').length || 0
+                },
+                alerts: alerts.items || []
+              };
+              
+              // Download as JSON
+              const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `weekly-report-${new Date().toISOString().split('T')[0]}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+              
+              showToast('✓ Weekly report downloaded!', 'success');
+            } catch (err) {
+              showToast('Failed to generate report', 'error');
+              console.error(err);
+            }
             break;
+            
           case 'device-settings':
-            toast('Opening device settings...', 'info');
+            // Open device management modal
+            showToast('Opening device settings...', 'info');
+            if (deviceModal && deviceModal.showModal) {
+              deviceModal.showModal();
+            }
             break;
+            
           default:
-            toast('Action executed.', 'success');
+            showToast('Action executed.', 'success');
         }
       });
     });

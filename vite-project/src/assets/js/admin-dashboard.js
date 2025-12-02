@@ -2,6 +2,7 @@ import { post, get, put, detectBackend } from './api.js';
 import { SkeletonLoader } from './skeleton.js';
 import wsClient from './websocket-client.js';
 import { CloudVisualizer, MatrixLogStream } from './cloud-viz.js';
+import { showToast } from './toast.js';
 
 // Get API_BASE dynamically
 async function getAPIBase() {
@@ -689,6 +690,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Add a catch-all listener for debugging
+  wsClient.on('message', (data) => {
+    if (data.type !== 'alert.new') {
+      console.log('[WS] Received unhandled message type:', data.type, data);
+    }
+  });
+
   console.log('[ADMIN DASHBOARD] Loaded with', alerts.length, 'alerts');
   
   // Performance Metrics Handlers
@@ -711,10 +719,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (response.ok) {
           const result = await response.json();
-          toast('✅ Load test completed successfully!', 'success');
-          
-          // Update metrics on page
-          updatePerformanceMetrics(result);
+          if (result.summary) {
+            toast('✅ Load test completed successfully!', 'success');
+            
+            // Update metrics on page
+            updatePerformanceMetrics(result);
+          } else {
+            toast('Load test started...', 'info');
+          }
         } else {
           toast('⚠️ Load test completed but check console for details', 'warning');
         }
@@ -749,6 +761,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   function updatePerformanceMetrics(data) {
     console.log('Updating metrics with data:', data);
+    
+    // Ignore WebSocket alert messages
+    if (data && data.type && data.type.startsWith('alert.')) {
+      return;
+    }
     
     // Check if data has the expected structure
     if (!data || !data.summary || !data.latency || !data.configuration) {

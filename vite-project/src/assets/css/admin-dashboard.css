@@ -322,15 +322,36 @@
     color: var(--gray-600);
 }
 
-/* Audit Log Table Enhancement */
+/* Styled Table for Admin Dashboard */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--space-4);
+}
+
+.styled-table th,
+.styled-table td {
+    border: 1px solid var(--gray-200);
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    font-size: var(--text-sm);
+}
+
+.styled-table th {
+    background-color: var(--gray-50);
+    font-weight: var(--font-semibold);
+    color: var(--gray-600);
+}
+
 .admin-body .table tbody tr {
     transition: all var(--transition-fast);
 }
 
-.admin-body .table tbody tr:hover {
-    background: linear-gradient(90deg, #fef3c7 0%, transparent 100%);
-    transform: translateX(4px);
+.styled-table tbody tr:hover {
+    background-color: var(--gray-100);
 }
+
+/* Audit Log Table Enhancement */
 
 /* System Settings Modal Enhancement */
 .admin-body .modal-content {

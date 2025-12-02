@@ -86,7 +86,7 @@ window.loadMLModels = async function () {
       return;
     }
 
-    let html = '<table class="table" style="width: 100%;"><thead><tr><th>Model Name</th><th>Type</th><th>Version</th><th>Status</th><th>Accuracy</th></tr></thead><tbody>';
+    let html = '<table class="styled-table" style="width: 100%;"><thead><tr><th>Model Name</th><th>Type</th><th>Version</th><th>Status</th><th>Accuracy</th></tr></thead><tbody>';
 
     data.models.forEach((model) => {
       const statusClass = model.status === 'active' ? 'success' : 'warning';

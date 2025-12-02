@@ -889,6 +889,53 @@ app.post('/api/v1/alerts/:id/ack', (req, res) => {
   });
 });
 
+// Bulk acknowledge all alerts for a tenant
+app.post('/api/v1/alerts/acknowledge-all', (req, res) => {
+  const tenant = req.body.tenant || 'default';
+  const actor = req.body.actor || 'demoUser';
+  const ts = nowISO();
+  
+  try {
+    // Get all unacknowledged alerts for this tenant
+    const alerts = db.prepare(`
+      SELECT * FROM alerts 
+      WHERE tenant = ? 
+      AND (state != 'acked' AND state != 'resolved')
+      AND (status != 'acknowledged' AND status != 'resolved')
+    `).all(tenant);
+    
+    let count = 0;
+    
+    // Acknowledge each alert
+    for (const alert of alerts) {
+      updateAck.run({ id: alert.id, actor, ts });
+      db.prepare(`UPDATE alerts SET state='acked', status='acknowledged' WHERE id=?`).run(alert.id);
+      
+      insertHistory.run({ 
+        id: nanoid(), 
+        alert_id: alert.id, 
+        action: 'ack', 
+        actor, 
+        note: 'Bulk acknowledge',
+        meta: JSON.stringify({ previous_state: alert.state }),
+        ts 
+      });
+      
+      broadcast('alert.acked', { ...alert, state: 'acked', status: 'acknowledged' });
+      count++;
+    }
+    
+    res.json({ 
+      success: true,
+      count,
+      message: `${count} alert(s) acknowledged`
+    });
+  } catch (err) {
+    console.error('[API] Bulk acknowledge failed:', err);
+    res.status(500).json({ error: 'Failed to acknowledge alerts' });
+  }
+});
+
 app.post('/api/v1/alerts/:id/escalate', (req, res) => {
   const id = req.params.id;
   const actor = (req.body && req.body.actor) || 'system';
