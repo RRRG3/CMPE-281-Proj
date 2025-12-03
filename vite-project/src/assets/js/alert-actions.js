@@ -123,19 +123,8 @@ export async function deleteAlert(alertId) {
 // Clear all alerts
 export async function clearAllAlertsAction() {
   try {
-    const response = await fetch('http://localhost:3000/api/v1/alerts/clear-all', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (response.ok) {
-      const result = await response.json();
-      return { success: true, deleted: result.deleted };
-    } else {
-      return { success: false, error: 'Request failed' };
-    }
+    const result = await del('/api/v1/alerts/clear-all');
+    return { success: true, deleted: result.deleted };
   } catch (err) {
     return { success: false, error: err.message };
   }

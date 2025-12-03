@@ -181,16 +181,19 @@
                 <div class="toolbar">
                     <label>
                         Alert Type:
-                        <select id="alert-type-select">
-                            <option value="glass_break">Glass Break</option>
-                            <option value="smoke_alarm">Smoke Alarm</option>
-                            <option value="dog_bark">Dog Bark</option>
-                            <option value="fall">Fall Detected</option>
-                            <option value="no_motion">No Motion</option>
-                            <option value="unusual_noise">Unusual Noise</option>
-                            <option value="door_open">Door Open</option>
-                            <option value="random">Random</option>
-                        </select>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                            <select id="alert-type-select" style="margin: 0;">
+                                <option value="glass_break">Glass Break</option>
+                                <option value="smoke_alarm">Smoke Alarm</option>
+                                <option value="dog_bark">Dog Bark</option>
+                                <option value="fall">Fall Detected</option>
+                                <option value="no_motion">No Motion</option>
+                                <option value="unusual_noise">Unusual Noise</option>
+                                <option value="door_open">Door Open</option>
+                                <option value="random">Random</option>
+                            </select>
+                            <button id="preview-alert-sound" class="btn btn-secondary btn-sm" title="Preview Sound" style="padding: 6px 12px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">🔊</button>
+                        </div>
                     </label>
                     <label>
                         Severity:

@@ -1,5 +1,5 @@
 import { Chart, registerables } from 'chart.js';
-import { post, get } from './api.js';
+import { post, get, put, del } from './api.js';
 import alertSounds from './alert-sounds.js';
 import { createFloorPlan, toggleFloorPlanView } from './floor-plan.js';
 import { initSearchFilter } from './search-filter.js';
@@ -639,24 +639,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       
       // Call API to delete device from database
-      const response = await fetch(`http://localhost:3000/api/v1/devices/${deviceId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const result = await del(`/api/v1/devices/${deviceId}`);
       
-      if (response.ok) {
-        toast(`✓ ${device.name} has been removed`, 'success');
-        console.log('[OWNER] Device deleted from database:', device.name);
-        
-        // Reload devices to refresh the display
-        await renderDevices();
-      } else {
-        const error = await response.json();
-        toast(`Failed to remove device: ${error.error || 'Unknown error'}`, 'error');
-        console.error('[OWNER] Failed to delete device:', error);
-      }
+      toast(`✓ ${device.name} has been removed`, 'success');
+      console.log('[OWNER] Device deleted from database:', device.name);
+      
+      // Reload devices to refresh the display
+      await renderDevices(); // del will throw if it fails, so success here means OK
     } catch (err) {
       console.error('[OWNER] Error removing device:', err);
       toast(`Error removing device: ${err.message}`, 'error');

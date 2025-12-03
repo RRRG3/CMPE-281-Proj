@@ -8,6 +8,7 @@ import {
   getSeverityBadge,
   getStatusBadge
 } from './alert-actions.js';
+import alertSounds from './alert-sounds.js';
 
 const toast = window.showToast || console.log;
 let currentAlert = null;
@@ -35,6 +36,26 @@ async function loadAlertDetail() {
     renderAlertInfo(currentAlert);
     renderAlertTimeline(currentAlert, history);
     renderActionButtons(currentAlert);
+    
+    // Setup audio player
+    const playAudioBtn = document.getElementById('playAudio');
+    if (playAudioBtn) {
+      playAudioBtn.addEventListener('click', () => {
+        if (currentAlert && currentAlert.type) {
+          alertSounds.playForType(currentAlert.type);
+          
+          // Visual feedback
+          const originalText = playAudioBtn.textContent;
+          playAudioBtn.textContent = '🔊 Playing...';
+          playAudioBtn.disabled = true;
+          
+          setTimeout(() => {
+            playAudioBtn.textContent = originalText;
+            playAudioBtn.disabled = false;
+          }, 2000);
+        }
+      });
+    }
     
     console.log('[alert-detail] Loaded alert:', currentAlert);
   } catch (err) {

@@ -1,0 +1,66 @@
+{
+  "timestamp": "2025-12-03T01:28:07.612Z",
+  "configuration": {
+    "duration": 60000,
+    "concurrentUsers": 10,
+    "target": "http://localhost:3000"
+  },
+  "summary": {
+    "totalRequests": 1974,
+    "successful": 1974,
+    "failed": 0,
+    "successRate": 100,
+    "requestsPerSecond": 32.9
+  },
+  "latency": {
+    "min": 0.404500000000553,
+    "max": 144.67520800000057,
+    "average": 5.254333285714237,
+    "p50": 3.658167000001413,
+    "p95": 14.976625000002969,
+    "p99": 19.99004100000093
+  },
+  "endpoints": {
+    "GET /api/v1/alerts/stats": {
+      "requests": 381,
+      "successful": 381,
+      "failed": 0,
+      "avgLatency": 6.3591028845143,
+      "minLatency": 2.0574169999999867,
+      "maxLatency": 63.07062500000029
+    },
+    "POST /api/v1/devices": {
+      "requests": 294,
+      "successful": 294,
+      "failed": 0,
+      "avgLatency": 2.341952241496731,
+      "minLatency": 0.404500000000553,
+      "maxLatency": 22.30470900000364
+    },
+    "POST /api/v1/alerts/ingest": {
+      "requests": 604,
+      "successful": 604,
+      "failed": 0,
+      "avgLatency": 2.860890599337637,
+      "minLatency": 0.4361250000001746,
+      "maxLatency": 47.55137500000001
+    },
+    "GET /api/v1/devices": {
+      "requests": 322,
+      "successful": 322,
+      "failed": 0,
+      "avgLatency": 11.784139596273478,
+      "minLatency": 4.706958000002487,
+      "maxLatency": 144.67520800000057
+    },
+    "POST /api/v1/alerts/search": {
+      "requests": 373,
+      "successful": 373,
+      "failed": 0,
+      "avgLatency": 4.660136396782644,
+      "minLatency": 1.3069169999998849,
+      "maxLatency": 79.7333749999998
+    }
+  },
+  "errors": []
+}

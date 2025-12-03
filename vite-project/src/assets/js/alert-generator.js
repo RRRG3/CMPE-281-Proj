@@ -1,6 +1,7 @@
 // Alert Generator - Allows manual generation of test alerts
-import { post } from './api.js';
+import { post, del } from './api.js';
 import { loadAlerts } from './alerts-list-enhanced.js';
+import alertSounds from './alert-sounds.js';
 
 const toast = window.showToast || console.log;
 
@@ -84,31 +85,20 @@ async function clearAllAlerts() {
   if (!confirm('Are you sure you want to delete ALL alerts? This action cannot be undone.')) {
     return { success: false, cancelled: true };
   }
-  
+
   try {
     toast('🗑️ Clearing all alerts...', 'info');
-    
-    const response = await fetch('http://localhost:3000/api/v1/alerts/clear-all', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (response.ok) {
-      const result = await response.json();
-      toast(`✓ Cleared ${result.deleted} alerts`, 'success');
-      
-      // Reload alerts
-      setTimeout(() => {
-        loadAlerts();
-      }, 500);
-      
-      return { success: true, deleted: result.deleted };
-    } else {
-      toast('Failed to clear alerts', 'error');
-      return { success: false, error: 'Request failed' };
-    }
+
+    const result = await del('/api/v1/alerts/clear-all');
+
+    toast(`✓ Cleared ${result.deleted} alerts`, 'success');
+
+    // Reload alerts
+    setTimeout(() => {
+      loadAlerts();
+    }, 500);
+
+    return { success: true, deleted: result.deleted };
   } catch (err) {
     console.error('[alert-generator] Clear error:', err);
     toast(`Error clearing alerts: ${err.message}`, 'error');
@@ -122,6 +112,21 @@ function initAlertGenerator() {
   const clearAllBtn = document.getElementById('clear-all-alerts');
   const alertTypeSelect = document.getElementById('alert-type-select');
   const alertSeveritySelect = document.getElementById('alert-severity-select');
+  const previewSoundBtn = document.getElementById('preview-alert-sound');
+
+  if (previewSoundBtn) {
+    previewSoundBtn.addEventListener('click', () => {
+      const type = alertTypeSelect?.value || 'glass_break';
+      if (type === 'random') {
+        const types = Object.keys(alertTypes);
+        const randomType = types[Math.floor(Math.random() * types.length)];
+        alertSounds.playForType(randomType);
+        toast(`🔊 Previewing random sound: ${alertTypes[randomType].label}`, 'info');
+      } else {
+        alertSounds.playForType(type);
+      }
+    });
+  }
   
   if (genCustomBtn) {
     genCustomBtn.addEventListener('click', async () => {
